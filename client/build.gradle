@@ -1,0 +1,33 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.5'
+}
+
+version '1.0-SNAPSHOT'
+
+javafx {
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+run {
+    mainClassName = "pl.edu.wat.kowalski.client.Main"
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    
+    implementation project(':common')
+//    / uncomment for cross-platform jar: */
+//    compile "org.openjfx:javafx-graphics:11:win"
+//    compile "org.openjfx:javafx-graphics:11:linux"
+//    compile "org.openjfx:javafx-graphics:11:mac"
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'pl.edu.wat.kowalski.client.Launcher'
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

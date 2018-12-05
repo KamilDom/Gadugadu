@@ -1,0 +1,2 @@
+rootProject.name = 'javafx'
+include 'server', 'client', 'common'
