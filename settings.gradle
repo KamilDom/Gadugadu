@@ -1,2 +1,2 @@
-rootProject.name = 'javafx'
+rootProject.name = 'gadugadu'
 include 'server', 'client', 'common'

@@ -10,12 +10,13 @@ javafx {
 }
 
 run {
-    mainClassName = "pl.edu.wat.kowalski.server.Main"
+    mainClassName = "pl.edu.wat.gadugadu.server.Main"
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-
+    compile 'io.vertx:vertx-mqtt:3.5.4'
+    
     implementation project(':common')
     /* uncomment for cross-platform jar: */
 //    compile "org.openjfx:javafx-graphics:11:win"
@@ -25,7 +26,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'pl.edu.wat.kowalski.server.Launcher'
+        attributes 'Main-Class': 'pl.edu.wat.gadugadu.server.Launcher'
     }
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }

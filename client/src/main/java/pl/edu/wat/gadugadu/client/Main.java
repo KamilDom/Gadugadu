@@ -1,4 +1,4 @@
-package pl.edu.wat.kowalski.server;
+package pl.edu.wat.gadugadu.client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -8,15 +8,18 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
     public static void main(String[] args) {
+        // te dwie linie potrzebne zeby nie pokazywalo niepotrzbnych warningow w konsoli
+        System.err.close();
+        System.setErr(System.out);
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/conversationWindow.fxml"));
         Scene scene = new Scene(root, 800, 600);
 
-        primaryStage.setTitle("ZPJJ Server Demo");
+        primaryStage.setTitle("Gadugadu Client");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

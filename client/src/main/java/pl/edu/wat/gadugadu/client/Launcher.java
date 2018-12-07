@@ -1,4 +1,4 @@
-package pl.edu.wat.kowalski.server;
+package pl.edu.wat.gadugadu.client;
 
 public class Launcher {
 
