@@ -1,15 +1,18 @@
 package pl.edu.wat.gadugadu.server;
 
+import com.google.gson.Gson;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
 import io.vertx.mqtt.MqttTopicSubscription;
-import pl.edu.wat.gadugadu.common.JsonParser;
+import pl.edu.wat.gadugadu.common.Payload;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Date;
 import java.util.List;
 
 public class Server {
@@ -19,15 +22,16 @@ public class Server {
     private MainController controller;
     private MqttServer mqttServer;
     private List<MqttEndpoint> connectedClients =new ArrayList();
-    private JsonParser jsonParser;
-
+    private Gson gson;
+    private DateFormat dateFormat;
 
     public Server(int port, String host, String topic, MainController controller) {
         this.port = port;
         this.host = host;
         this.topic = topic;
         this.controller=controller;
-        jsonParser = new JsonParser();
+        gson = new Gson();
+        dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
         mqttServer = MqttServer.create(Vertx.vertx());
 
@@ -169,7 +173,7 @@ public class Server {
     public void publishTestMessage(String message) {
         for (MqttEndpoint endpoint : connectedClients) {
             endpoint.publish(topic,
-                    Buffer.buffer(jsonParser.makePayload(1,"SERVER",message)),
+                    Buffer.buffer(gson.toJson(new Payload(1, 0, dateFormat.format(new Date()), message, null), Payload.class)),
                     MqttQoS.AT_MOST_ONCE,
                     false,
                     false);

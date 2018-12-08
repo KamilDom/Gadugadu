@@ -7,11 +7,4 @@ version '1.0-SNAPSHOT'
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'com.jfoenix:jfoenix:9.0.8'
-
-    compile group: 'javax.json', name: 'javax.json-api', version: '1.1.2'
-    compile group: 'javax.json.bind', name: 'javax.json.bind-api', version: '1.0'
-
-    compile group: 'org.glassfish', name: 'javax.json', version: '1.1.2'
-    compile group: 'org.eclipse', name: 'yasson', version: '1.0.1'
-
 }

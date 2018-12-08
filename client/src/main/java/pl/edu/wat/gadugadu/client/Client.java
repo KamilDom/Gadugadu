@@ -1,15 +1,18 @@
 package pl.edu.wat.gadugadu.client;
 
+import com.google.gson.Gson;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
 import pl.edu.wat.gadugadu.common.ClientStatus;
-import pl.edu.wat.gadugadu.common.JsonParser;
+import pl.edu.wat.gadugadu.common.Payload;
 
-import java.net.ConnectException;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Client {
     private int port;
@@ -18,16 +21,18 @@ public class Client {
     private MqttClientOptions options;
     private MqttClient client;
     private MainController controller;
-    private JsonParser jsonParser;
+    private Gson gson;
+    private DateFormat dateFormat;
 
     public Client(int port, String host, String topic, MainController controller) {
         this.port = port;
         this.host = host;
         this.topic = topic;
         this.controller = controller;
-        jsonParser = new JsonParser();
+        gson = new Gson();
+        dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
-        MqttClientOptions options = new MqttClientOptions().setKeepAliveTimeSeconds(30);
+        options = new MqttClientOptions().setKeepAliveTimeSeconds(30);
 
         client = MqttClient.create(Vertx.vertx(), options);
 
@@ -65,7 +70,7 @@ public class Client {
     public void publishMessage(String message) {
         client.publish(
                 topic,
-                Buffer.buffer(jsonParser.makePayload(1,"aa",message)),
+                Buffer.buffer(gson.toJson(new Payload(1, 1, dateFormat.format(new Date()), message, null), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
@@ -74,7 +79,7 @@ public class Client {
     public void changeStatus(ClientStatus status) {
         client.publish(
                 topic,
-                Buffer.buffer(jsonParser.makePayload(0,"aa",String.valueOf(status.value()))),
+                Buffer.buffer(gson.toJson(new Payload(0, 1, dateFormat.format(new Date()), null, status), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
