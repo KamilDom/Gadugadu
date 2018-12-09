@@ -19,11 +19,14 @@ dependencies {
 
     implementation project(':common')
     implementation 'com.google.code.gson:gson:2.8.5'
-    
+
 //    / uncomment for cross-platform jar: */
 //    compile "org.openjfx:javafx-graphics:11:win"
 //    compile "org.openjfx:javafx-graphics:11:linux"
 //    compile "org.openjfx:javafx-graphics:11:mac"
+    compile 'org.kordamp.ikonli:ikonli-swing:11.0.2'
+
+
 }
 
 jar {

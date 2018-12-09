@@ -16,8 +16,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/conversationWindow.fxml"));
-        Scene scene = new Scene(root, 800, 600);
+        Parent root = FXMLLoader.load(getClass().getResource("/ui/loginWindow.fxml"));
+        Scene scene = new Scene(root);
 
         primaryStage.setTitle("Gadugadu Client");
         primaryStage.setScene(scene);

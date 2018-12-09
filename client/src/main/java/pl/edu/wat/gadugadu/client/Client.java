@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
+import pl.edu.wat.gadugadu.client.controllers.MainController;
 import pl.edu.wat.gadugadu.common.ClientStatus;
 import pl.edu.wat.gadugadu.common.Payload;
 
@@ -38,7 +39,8 @@ public class Client {
 
         client.publishHandler(publish -> {
             System.out.println("Just received message on [" + publish.topicName() + "] payload [" + publish.payload().toString(Charset.defaultCharset()) + "] with QoS [" + publish.qosLevel() + "]");
-            });
+            controller.showMessage(publish.payload().toString());
+        });
 
         client.closeHandler(event -> {
             //TODO trzeba tu bedzie obsłużyć padnięcie serwera
