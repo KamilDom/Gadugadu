@@ -8,7 +8,7 @@ version '1.0-SNAPSHOT'
 javafx {
     modules = ['javafx.controls', 'javafx.fxml']
 }
-
+    
 run {
     mainClassName = "pl.edu.wat.gadugadu.client.Main"
 }

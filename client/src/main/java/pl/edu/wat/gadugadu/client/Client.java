@@ -25,6 +25,9 @@ public class Client {
     private Gson gson;
     private DateFormat dateFormat;
 
+    // tymczasowe rozwiazania
+    private int clientId=1;
+
     public Client(int port, String host, String topic, MainController controller) {
         this.port = port;
         this.host = host;
@@ -46,6 +49,7 @@ public class Client {
             //TODO trzeba tu bedzie obsłużyć padnięcie serwera
             System.out.println("Server down");
         });
+
         }
 
     public void connect(){
@@ -72,7 +76,7 @@ public class Client {
     public void publishMessage(String message) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(1, 1, dateFormat.format(new Date()), message, null), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(1, clientId, dateFormat.format(new Date()), message, null), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
@@ -81,7 +85,7 @@ public class Client {
     public void changeStatus(ClientStatus status) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(0, 1, dateFormat.format(new Date()), null, status), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(0, clientId, dateFormat.format(new Date()), null, status), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);

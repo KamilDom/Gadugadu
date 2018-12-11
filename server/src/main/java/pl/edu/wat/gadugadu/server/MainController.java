@@ -11,7 +11,7 @@ public class MainController {
     public Server server;
 
     public void initialize() {
-        server = new Server(1883,"0.0.0.0","gadugadu", this);
+        server = new Server(1883,"127.0.0.20","gadugadu", this);
     }
 
     public void onStartServer(ActionEvent actionEvent) {
