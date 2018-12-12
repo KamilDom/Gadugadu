@@ -28,6 +28,20 @@
     -fx-font-size: 12pt;
 }
 
+.uploadfile-button{
+    -fx-text-fill: -fx-primarytext;
+    -fx-background-color: -fx-primary;
+    -fx-border-color: -fx-secondary;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-font-size: 10pt;
+}
+
+.label{
+    -fx-text-fill: -fx-primarytext;
+    -fx-font-size: 9pt;
+}
+
 .button:hover, .button:focused{
     -fx-border-color: -fx-secondary;
     -fx-background-color: -fx-secondary;

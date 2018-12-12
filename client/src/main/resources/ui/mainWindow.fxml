@@ -8,7 +8,10 @@
 
 <HBox fx:id="windowBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.wat.gadugadu.client.controllers.MainController">
    <children>
-      <VBox fx:id="contactsBox" prefHeight="200.0" prefWidth="100.0" styleClass="dark-background" stylesheets="@dark-theme.css" />
+      <VBox fx:id="contactsBox" prefHeight="200.0" prefWidth="100.0" styleClass="dark-background" stylesheets="@dark-theme.css">
+         <children>
+            <HBox fx:id="userInfoBox" />
+         </children></VBox>
       <VBox fx:id="conversationBox" prefWidth="100.0" stylesheets="@dark-theme.css">
          <children>
             <ScrollPane fx:id="messageScroll" prefHeight="200.0" prefWidth="200.0">

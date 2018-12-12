@@ -11,6 +11,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.ImagePattern;
+import javafx.stage.Stage;
 import pl.edu.wat.gadugadu.client.Client;
 import pl.edu.wat.gadugadu.client.controllers.messageViewControllers.MessageViewController;
 import pl.edu.wat.gadugadu.common.ClientStatus;
@@ -24,6 +25,7 @@ public class MainController {
 
 
     public VBox messageScrollBox;
+    public HBox userInfoBox;
     private Client client;
 
     public HBox windowBox;
@@ -45,6 +47,18 @@ public class MainController {
         messageScroll.setFitToWidth(true);
         client = new Client(1883, "127.0.0.20", "gadugadu", this);
         client.connect();
+        loadClientInfo();
+
+        messageScrollBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            Platform.runLater(() -> {
+                Stage stage = (Stage) newScene.getWindow();
+                stage.setOnCloseRequest(e -> {
+                    Platform.exit();
+                    System.exit(0);
+                });
+            });
+        });
+
     }
 
     public void onConnectToServer(ActionEvent actionEvent) {
@@ -84,13 +98,11 @@ public class MainController {
                 MessageViewController messageViewController = loader.getController();
                 messageViewController.userName.setText("xDD");
                 messageViewController.messageContent.setText(message);
-                messageViewController.messageVBox.prefWidthProperty().set(USE_COMPUTED_SIZE);
-                messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
 
+                messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
                 messageScrollBox.widthProperty().addListener(observable -> {
                     messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
                 });
-
 
                 Image img = new Image("/blank-profile-picture.png");
                 messageViewController.userImage.setFill(new ImagePattern(img));
@@ -105,4 +117,30 @@ public class MainController {
         });
 
     }
+    private void loadClientInfo(){
+        VBox vBox = new VBox();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/clientInfo.fxml"));
+        Parent parent;
+        try {
+            parent = loader.load();
+            ClientInfoController clientInfoController = loader.getController();
+            clientInfoController.userName.setText("xDD");
+            clientInfoController.status.setText("4");
+
+          /*  messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
+            messageScrollBox.widthProperty().addListener(observable -> {
+                messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
+            });*/
+
+            Image img = new Image("/blank-profile-picture.png");
+            clientInfoController.userImage.setFill(new ImagePattern(img));
+
+            vBox.getChildren().addAll(parent);
+            userInfoBox.getChildren().add(vBox);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

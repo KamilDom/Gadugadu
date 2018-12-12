@@ -11,7 +11,8 @@
         <Circle fx:id="userImage" fill="DODGERBLUE" radius="25.0" stroke="BLACK" strokeType="INSIDE">
             <HBox.margin>
                 <Insets left="5.0" right="5.0" />
-            </HBox.margin></Circle>
+            </HBox.margin>
+      </Circle>
       <VBox fx:id="messageVBox" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="message-cloud" stylesheets="@../ui/dark-theme.css">
          <children>
             <Label fx:id="userName" styleClass="message-user-text" stylesheets="@../ui/dark-theme.css" text="Label" />
