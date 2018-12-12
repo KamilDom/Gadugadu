@@ -29,7 +29,7 @@ public class Server {
         this.port = port;
         this.host = host;
         this.topic = topic;
-        this.controller=controller;
+        this.controller = controller;
         gson = new Gson();
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
@@ -179,4 +179,6 @@ public class Server {
                     false);
         }
     }
+
+    //TODO add db methods
 }
