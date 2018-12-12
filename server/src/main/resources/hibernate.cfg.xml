@@ -22,8 +22,8 @@
         <property name="hbm2ddl.auto">update</property>
 
         <!-- Names the annotated entity class -->
-        <mapping class="pl.edu.wat.gadugadu.server.User"/>
-        <mapping class="pl.edu.wat.gadugadu.server.Message"/>
+        <mapping class="pl.edu.wat.gadugadu.server.database.User"/>
+        <mapping class="pl.edu.wat.gadugadu.server.database.Message"/>
 
     </session-factory>
 </hibernate-configuration>

@@ -1,4 +1,4 @@
-package pl.edu.wat.gadugadu.server;
+package pl.edu.wat.gadugadu.server.database;
 
 import javax.persistence.*;
 
