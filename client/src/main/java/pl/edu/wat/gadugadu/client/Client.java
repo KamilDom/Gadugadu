@@ -24,6 +24,8 @@ public class Client {
     private MainController controller;
     private Gson gson;
     private DateFormat dateFormat;
+    private ClientStatus status;
+
 
     // tymczasowe rozwiazania
     private int clientId=1;
@@ -58,6 +60,7 @@ public class Client {
             if (ch.succeeded()) {
                 System.out.println("Connected to a server");
                 client.subscribe(topic, 0);
+                status=ClientStatus.AVAILABLE;
             } else {
                 System.out.println("Failed to connect to a server");
                 //System.out.println(ch.cause());
@@ -91,5 +94,11 @@ public class Client {
                 false);
     }
 
+    public ClientStatus getStatus() {
+        return status;
+    }
 
+    public void setStatus(ClientStatus status) {
+        this.status = status;
+    }
 }
