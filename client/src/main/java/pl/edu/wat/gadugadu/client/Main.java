@@ -5,8 +5,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import pl.edu.wat.gadugadu.client.controllers.LoginController;
+import pl.edu.wat.gadugadu.client.controllers.MainController;
 
 public class Main extends Application {
+    public static Client client;
+    public static LoginController loginController;
+    public static MainController mainController;
+
     public static void main(String[] args) {
         // te dwie linie potrzebne zeby nie pokazywalo niepotrzbnych warningow w konsoli
         System.err.close();
@@ -16,9 +22,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/ui/loginWindow.fxml"));
-        Scene scene = new Scene(root);
-
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/loginWindow.fxml"));
+        Parent parent = loader.load();
+        Scene scene = new Scene(parent);
+        client = new Client(1883, "127.0.0.20", "gadugadu");
         primaryStage.setTitle("Gadugadu Client");
         primaryStage.setScene(scene);
         primaryStage.show();

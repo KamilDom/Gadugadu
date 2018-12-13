@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import pl.edu.wat.gadugadu.client.Main;
 
 import java.io.IOException;
 
@@ -17,6 +18,7 @@ public class LoginController {
     public JFXPasswordField password;
 
     public void initialize() {
+        Main.loginController=this;
         username.setText("user");
         password.setText("user");
     }
@@ -44,6 +46,8 @@ public class LoginController {
         String uname = username.getText();
         String pword = password.getText();
 
+        Main.client.connect();
+
         //TODO do kodowania w sha w bazie danych
         //String pword = DigestUtils.shaHex(password.getText());
 
@@ -52,6 +56,7 @@ public class LoginController {
             //if (uname.equals(preference.getUsername()) && pword.equals(preference.getPassword())) {
             closeStage();
             loadMain();
+            Main.client.login(uname,pword);
 
         }
         else {

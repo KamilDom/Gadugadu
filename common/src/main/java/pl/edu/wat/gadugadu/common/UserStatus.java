@@ -5,7 +5,8 @@ public enum UserStatus {
     BUSY(1),
     DO_NOT_DISTURB(2),
     AWAY(3),
-    BE_RIGHT_BACK(4);
+    BE_RIGHT_BACK(4),
+    OFFLINE(5);
 
     private final int value;
     public static final String[] statusFromInputBox ={

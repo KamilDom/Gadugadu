@@ -4,14 +4,14 @@ import java.util.List;
 
 public class Payload {
     private PayloadType contentType;
-    private int clientId;
+    private Integer clientId;
     private String date;
     private String content;
     private UserStatus status;
     private Authentication authentication;
     private List<UserInfo> usersInfo;
 
-    public Payload(PayloadType contentType, int clientId, String date, String content, UserStatus status, Authentication authentication, List<UserInfo> usersInfo) {
+    public Payload(PayloadType contentType, Integer clientId, String date, String content, UserStatus status, Authentication authentication, List<UserInfo> usersInfo) {
         this.contentType = contentType;
         this.clientId = clientId;
         this.date = date;
@@ -25,7 +25,7 @@ public class Payload {
         return contentType;
     }
 
-    public int getClientId() {
+    public Integer getClientId() {
         return clientId;
     }
 

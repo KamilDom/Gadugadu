@@ -24,7 +24,7 @@ public class MainController {
 
     public void onSendMessage(ActionEvent actionEvent) {
         //server.publishTestMessage("Test message");
-       // server.publishClientsList();
+        server.publishClientsList();
 }
 
     public void updateStatus(String status){

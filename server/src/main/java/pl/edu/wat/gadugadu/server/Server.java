@@ -14,9 +14,9 @@ import pl.edu.wat.gadugadu.common.Payload;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class Server {
     private int port;
@@ -26,9 +26,7 @@ public class Server {
     private MainController controller;
     private MqttServer mqttServer;
     private Gson gson;
-    private DateFormat dateFormat;
     private List<UserInfo> onlineUsers;
-    private static int clientId =0;
 
     public Server(int port, String host, String topic, MainController controller) {
         this.port = port;
@@ -36,10 +34,10 @@ public class Server {
         this.topic = topic;
         this.controller = controller;
         gson = new Gson();
-        dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
         onlineUsers = new ArrayList<>();
         connectedClients=0;
         mqttServer = MqttServer.create(Vertx.vertx());
+
 
         mqttServer
                 .endpointHandler(endpoint -> {
@@ -72,7 +70,6 @@ public class Server {
                         }
                         // ack the subscriptions request
                         endpoint.subscribeAcknowledge(subscribe.messageId(), grantedQosLevels);
-
 
 
 
@@ -112,7 +109,11 @@ public class Server {
                         System.out.println("Received disconnect from client");
                         connectedClients--;
                         controller.updateConnectedClientsCount(connectedClients);
-
+                        onlineUsers.stream()
+                                .filter(userInfo -> userInfo.getClientIdentifier().equals(endpoint.clientIdentifier()))
+                                .findAny()
+                                .ifPresentOrElse(userInfo -> onlineUsers.remove(userInfo), () -> System.out.println("User not found"));
+                        publishClientsList();
                     });
 
                     // handling closing connection
@@ -120,7 +121,11 @@ public class Server {
                         System.out.println("Connection closed");
                         connectedClients--;
                         controller.updateConnectedClientsCount(connectedClients);
-
+                        onlineUsers.stream()
+                                .filter(userInfo -> userInfo.getClientIdentifier().equals(endpoint.clientIdentifier()))
+                                .findAny()
+                                .ifPresentOrElse(userInfo -> onlineUsers.remove(userInfo), () -> System.out.println("User not found"));
+                        publishClientsList();
                     });
 
                     // handling incoming published messages
@@ -131,17 +136,23 @@ public class Server {
                         Payload payload = gson.fromJson(message.payload().toString(), Payload.class);
 
                         switch(payload.getContentType()){
-                            case AUTHENTICATION:
-                                onlineUsers.add(new UserInfo(payload.getClientId(),"Edek","",payload.getStatus(),endpoint));
+                            case AUTHENTICATION: {
+                               // endpoint.accept(true);
+                                System.out.println("tess");
+                                onlineUsers.add(new UserInfo(endpoint.clientIdentifier(), payload.getClientId(), "Edek", "", payload.getStatus(), endpoint));
+                                publishClientsList();
+                            }
                                 break;
                             case STATUS_UPDATE:
                                 onlineUsers.stream()
-                                        .findFirst()
                                         .filter(userInfo -> userInfo.getClientId()==payload.getClientId())
+                                        .findAny()
                                         .ifPresentOrElse(userInfo -> userInfo.setUserStatus(payload.getStatus()), () -> System.out.println("User not found"));
+
+                                publishClientsList();
                                 break;
                             case ONLINE_USERS_LIST:
-
+                                publishClientsList();
                                 break;
                             case MESSAGE:
 
@@ -207,16 +218,21 @@ public class Server {
                     false);
         }
     }
-
+*/
     public void publishClientsList(){
-        for (MqttEndpoint endpoint : connectedClients) {
-            endpoint.publish(topic,
-                    Buffer.buffer(gson.toJson(new Payload(PayloadType.ONLINE_USERS_LIST.value(), 0, dateFormat.format(new Date()), null, null, null,null), Payload.class)),
-                    MqttQoS.AT_MOST_ONCE,
-                    false,
-                    false);
+        System.out.println(onlineUsers.size());
+       // for (Map.Entry<Integer, UserInfo> userInfo: onlineUsers.entrySet()) {
+        for(UserInfo userInfo: onlineUsers){
+                userInfo.getEndpoint().publish(
+                        topic,
+                        Buffer.buffer(gson.toJson(new Payload(PayloadType.ONLINE_USERS_LIST, null, null, null,
+                                null, null, onlineUsers), Payload.class)),
+                        MqttQoS.AT_MOST_ONCE,
+                        false,
+                        false);
+
         }
-    }*/
+    }
 
     //TODO add db methods
 }

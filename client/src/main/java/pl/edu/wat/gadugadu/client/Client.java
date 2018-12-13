@@ -6,10 +6,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
-import pl.edu.wat.gadugadu.client.controllers.MainController;
-import pl.edu.wat.gadugadu.common.PayloadType;
-import pl.edu.wat.gadugadu.common.UserStatus;
-import pl.edu.wat.gadugadu.common.Payload;
+import javafx.fxml.FXMLLoader;
+import pl.edu.wat.gadugadu.common.*;
 
 import java.nio.charset.Charset;
 import java.text.DateFormat;
@@ -22,20 +20,16 @@ public class Client {
     private String topic;
     private MqttClientOptions options;
     private MqttClient client;
-    private MainController controller;
     private Gson gson;
     private DateFormat dateFormat;
-    private UserStatus status;
-
 
     // tymczasowe rozwiazania
-    public int clientId=2;
+    public int clientId=75;
 
-    public Client(int port, String host, String topic, MainController controller) {
+    public Client(int port, String host, String topic) {
         this.port = port;
         this.host = host;
         this.topic = topic;
-        this.controller = controller;
         gson = new Gson();
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
@@ -45,8 +39,29 @@ public class Client {
 
         client.publishHandler(publish -> {
             System.out.println("Just received message on [" + publish.topicName() + "] payload [" + publish.payload().toString(Charset.defaultCharset()) + "] with QoS [" + publish.qosLevel() + "]");
-            controller.showMessage(publish.payload().toString());
-            controller.updateClientsList(publish.payload().toString());
+            Payload payload = gson.fromJson(publish.payload().toString(), Payload.class);
+
+            switch(payload.getContentType()){
+                case STATUS_UPDATE:
+
+                    break;
+                case ONLINE_USERS_LIST:
+                    Main.mainController.updateClientsList(payload.getUsersInfo());
+                    break;
+                case MESSAGE:
+                    Main.mainController.showMessage(payload);
+                    break;
+                case IMAGE:
+
+                    break;
+
+                default:
+                    //
+            }
+
+
+
+
         });
 
         client.closeHandler(event -> {
@@ -56,13 +71,13 @@ public class Client {
 
         }
 
+
+
     public void connect(){
             //TODO dodanie obługi wyjątku w przypadku niepowodzenia połączenia
        client.connect(port, host, ch -> {
             if (ch.succeeded()) {
                 System.out.println("Connected to a server");
-                client.subscribe(topic, 0);
-                status= UserStatus.AVAILABLE;
             } else {
                 System.out.println("Failed to connect to a server");
                 //System.out.println(ch.cause());
@@ -78,10 +93,21 @@ public class Client {
         return client.isConnected();
     }
 
+    public void login(String login, String password) {
+        client.publish(
+                topic,
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, clientId,
+                        dateFormat.format(new Date()), null, UserStatus.AVAILABLE, new Authentication(login,password),null), Payload.class)),
+                MqttQoS.AT_MOST_ONCE,
+                false,
+                false);
+        client.subscribe(topic, 0);
+    }
+
     public void publishMessage(String message) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE.value(), clientId,
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, clientId,
                         dateFormat.format(new Date()), message, null, null, null), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
@@ -91,18 +117,12 @@ public class Client {
     public void changeStatus(UserStatus status) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE.value(), clientId,
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE, clientId,
                         dateFormat.format(new Date()), null, status, null, null), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
     }
 
-    public UserStatus getStatus() {
-        return status;
-    }
 
-    public void setStatus(UserStatus status) {
-        this.status = status;
-    }
 }
