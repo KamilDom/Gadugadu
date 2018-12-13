@@ -7,6 +7,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
 import io.vertx.mqtt.MqttTopicSubscription;
+import pl.edu.wat.gadugadu.common.PayloadType;
+import pl.edu.wat.gadugadu.common.UserInfo;
+import pl.edu.wat.gadugadu.common.UserStatus;
 import pl.edu.wat.gadugadu.common.Payload;
 
 import java.text.DateFormat;
@@ -17,13 +20,15 @@ import java.util.List;
 
 public class Server {
     private int port;
+    private int connectedClients;
     private String host;
     private String topic;
     private MainController controller;
     private MqttServer mqttServer;
-    private List<MqttEndpoint> connectedClients =new ArrayList();
     private Gson gson;
     private DateFormat dateFormat;
+    private List<UserInfo> onlineUsers;
+    private static int clientId =0;
 
     public Server(int port, String host, String topic, MainController controller) {
         this.port = port;
@@ -32,7 +37,8 @@ public class Server {
         this.controller = controller;
         gson = new Gson();
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
-
+        onlineUsers = new ArrayList<>();
+        connectedClients=0;
         mqttServer = MqttServer.create(Vertx.vertx());
 
         mqttServer
@@ -40,6 +46,8 @@ public class Server {
 
                     // shows main connect info
                     System.out.println("MQTT client [" + endpoint.clientIdentifier() + "] request to connect, clean session = " + endpoint.isCleanSession());
+                        connectedClients++;
+                        controller.updateConnectedClientsCount(connectedClients);
 
                     if (endpoint.auth() != null) {
                         System.out.println("[username = " + endpoint.auth().userName() + ", password = " + endpoint.auth().password() + "]");
@@ -66,9 +74,7 @@ public class Server {
                         endpoint.subscribeAcknowledge(subscribe.messageId(), grantedQosLevels);
 
 
-                        connectedClients.add(endpoint);
 
-                        controller.updateConnectedClientsCount(connectedClients.size());
 
                         // specifing handlers for handling QoS 1 and 2
                         endpoint.publishAcknowledgeHandler(messageId -> {
@@ -104,16 +110,16 @@ public class Server {
                     // handling disconnect message
                     endpoint.disconnectHandler(v -> {
                         System.out.println("Received disconnect from client");
-                        connectedClients.remove(endpoint);
-                        controller.updateConnectedClientsCount(connectedClients.size());
+                        connectedClients--;
+                        controller.updateConnectedClientsCount(connectedClients);
 
                     });
 
                     // handling closing connection
                     endpoint.closeHandler(v -> {
                         System.out.println("Connection closed");
-                        connectedClients.remove(endpoint);
-                        controller.updateConnectedClientsCount(connectedClients.size());
+                        connectedClients--;
+                        controller.updateConnectedClientsCount(connectedClients);
 
                     });
 
@@ -122,7 +128,32 @@ public class Server {
 
                         System.out.println("Just received message on [" + message.topicName() + "] payload [" + message.payload() + "] with QoS [" + message.qosLevel() + "]");
 
-                        publishMessage(message.payload().toString());
+                        Payload payload = gson.fromJson(message.payload().toString(), Payload.class);
+
+                        switch(payload.getContentType()){
+                            case AUTHENTICATION:
+                                onlineUsers.add(new UserInfo(payload.getClientId(),"Edek","",payload.getStatus(),endpoint));
+                                break;
+                            case STATUS_UPDATE:
+                                onlineUsers.stream()
+                                        .findFirst()
+                                        .filter(userInfo -> userInfo.getClientId()==payload.getClientId())
+                                        .ifPresentOrElse(userInfo -> userInfo.setUserStatus(payload.getStatus()), () -> System.out.println("User not found"));
+                                break;
+                            case ONLINE_USERS_LIST:
+
+                                break;
+                            case MESSAGE:
+
+                                break;
+                            case IMAGE:
+
+                                break;
+
+                            default:
+                               //
+                        }
+
 
                         if (message.qosLevel() == MqttQoS.AT_LEAST_ONCE) {
                             endpoint.publishAcknowledge(message.messageId());
@@ -155,11 +186,8 @@ public class Server {
         });
     }
 
-    public int getConnectedClientsrCount(){
-        return connectedClients.size();
-    }
 
-    public void publishMessage(String message){
+  /*  public void publishMessage(String message){
         for (MqttEndpoint endpoint : connectedClients) {
             endpoint.publish(topic,
                     Buffer.buffer(message),
@@ -173,12 +201,22 @@ public class Server {
     public void publishTestMessage(String message) {
         for (MqttEndpoint endpoint : connectedClients) {
             endpoint.publish(topic,
-                    Buffer.buffer(gson.toJson(new Payload(1, 0, dateFormat.format(new Date()), message, null), Payload.class)),
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE.value(), 0, dateFormat.format(new Date()), message, null, null, null), Payload.class)),
                     MqttQoS.AT_MOST_ONCE,
                     false,
                     false);
         }
     }
+
+    public void publishClientsList(){
+        for (MqttEndpoint endpoint : connectedClients) {
+            endpoint.publish(topic,
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.ONLINE_USERS_LIST.value(), 0, dateFormat.format(new Date()), null, null, null,null), Payload.class)),
+                    MqttQoS.AT_MOST_ONCE,
+                    false,
+                    false);
+        }
+    }*/
 
     //TODO add db methods
 }

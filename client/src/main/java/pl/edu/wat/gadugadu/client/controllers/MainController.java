@@ -1,5 +1,6 @@
 package pl.edu.wat.gadugadu.client.controllers;
 
+import com.google.gson.Gson;
 import com.jfoenix.controls.JFXTextArea;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -14,18 +15,19 @@ import javafx.scene.paint.ImagePattern;
 import javafx.stage.Stage;
 import pl.edu.wat.gadugadu.client.Client;
 import pl.edu.wat.gadugadu.client.controllers.messageViewControllers.MessageViewController;
-import pl.edu.wat.gadugadu.common.ClientStatus;
+import pl.edu.wat.gadugadu.common.UserStatus;
+import pl.edu.wat.gadugadu.common.Payload;
 
 import java.io.IOException;
 import java.util.Arrays;
-
-import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
 
 public class MainController {
 
 
     public VBox messageScrollBox;
     public HBox userInfoBox;
+    public ScrollPane contactsListScroll;
+    public VBox contactsListScrollBox;
     private Client client;
 
     public HBox windowBox;
@@ -34,8 +36,11 @@ public class MainController {
     public ScrollPane messageScroll;
     public JFXTextArea messageField;
 
+    private Gson gson;
 
     public void initialize() {
+        gson = new Gson();
+
         contactsBox.setMinWidth(200);
         conversationBox.prefWidthProperty().bind(windowBox.widthProperty());
         messageScrollBox.heightProperty().addListener(observable -> messageScroll.setVvalue(1D));
@@ -45,6 +50,12 @@ public class MainController {
         messageScroll.prefHeightProperty().bind(windowBox.heightProperty());
         messageScroll.prefWidthProperty().bind(windowBox.widthProperty());
         messageScroll.setFitToWidth(true);
+        messageScroll.setFitToHeight(true);
+        contactsListScroll.prefHeightProperty().bind(windowBox.heightProperty());
+        contactsListScrollBox.prefWidthProperty().bind(contactsListScroll.widthProperty());
+        contactsListScrollBox.prefHeightProperty().bind(contactsListScroll.heightProperty());
+        contactsListScroll.setFitToWidth(true);
+        contactsListScroll.setFitToHeight(true);
         client = new Client(1883, "127.0.0.20", "gadugadu", this);
         client.connect();
         loadClientInfo();
@@ -70,11 +81,11 @@ public class MainController {
 
         if (keyEvent.getCode().toString().equals("ENTER") & !messageField.getText().isBlank()) {
             //sprawdzanie czy wprowadzono komende zmiany statusu
-            Arrays.stream(ClientStatus.statusFromInputBox)
+            Arrays.stream(UserStatus.statusFromInputBox)
                     .filter(removeLastChar(messageField.getText())::equals)
                     .findAny()
                     .ifPresentOrElse(s -> client.changeStatus(
-                            ClientStatus.valueOf(Arrays.asList(ClientStatus.statusFromInputBox).indexOf(s))),
+                            UserStatus.valueOf(Arrays.asList(UserStatus.statusFromInputBox).indexOf(s))),
                             () -> client.publishMessage(removeLastChar(messageField.getText()))
                     );
 
@@ -87,17 +98,24 @@ public class MainController {
         return str.substring(0, str.length() - 1);
     }
 
-    public void showMessage(String message) {
+    public void showMessage(String payload) {
         Platform.runLater(() -> {
             VBox vBox = new VBox();
-           // FXMLLoader loader = new FXMLLoader(getClass().getResource("/messageView/incomingMessage.fxml"));
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/messageView/outgoingMessage.fxml"));
+            Payload p = gson.fromJson(payload, Payload.class);
+
+            FXMLLoader loader;
+            if (p.getClientId()==client.clientId){
+                loader = new FXMLLoader(getClass().getResource("/messageView/outgoingMessage.fxml"));
+            } else {
+                loader = new FXMLLoader(getClass().getResource("/messageView/incomingMessage.fxml"));
+            }
+
             Parent parent;
             try {
                 parent = loader.load();
                 MessageViewController messageViewController = loader.getController();
                 messageViewController.userName.setText("xDD");
-                messageViewController.messageContent.setText(message);
+                messageViewController.messageContent.setText(p.getContent());
 
                 messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
                 messageScrollBox.widthProperty().addListener(observable -> {
@@ -109,7 +127,6 @@ public class MainController {
 
                 vBox.getChildren().addAll(parent);
                 messageScrollBox.getChildren().add(vBox);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -119,21 +136,17 @@ public class MainController {
     }
     private void loadClientInfo(){
         VBox vBox = new VBox();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/clientInfo.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/userInfo.fxml"));
         Parent parent;
         try {
             parent = loader.load();
-            ClientInfoController clientInfoController = loader.getController();
-            clientInfoController.userName.setText("xDD");
-            clientInfoController.status.setText("4");
-
-          /*  messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
-            messageScrollBox.widthProperty().addListener(observable -> {
-                messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
-            });*/
+            UserInfoController userInfoController = loader.getController();
+            userInfoController.setClient(client);
+            userInfoController.userName.setText("xDD");
+            userInfoController.status.setText("4");
 
             Image img = new Image("/blank-profile-picture.png");
-            clientInfoController.userImage.setFill(new ImagePattern(img));
+            userInfoController.userImage.setFill(new ImagePattern(img));
 
             vBox.getChildren().addAll(parent);
             userInfoBox.getChildren().add(vBox);
@@ -143,4 +156,6 @@ public class MainController {
         }
     }
 
+    public void updateClientsList(String payload) {
+    }
 }

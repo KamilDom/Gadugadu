@@ -7,7 +7,8 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
 import pl.edu.wat.gadugadu.client.controllers.MainController;
-import pl.edu.wat.gadugadu.common.ClientStatus;
+import pl.edu.wat.gadugadu.common.PayloadType;
+import pl.edu.wat.gadugadu.common.UserStatus;
 import pl.edu.wat.gadugadu.common.Payload;
 
 import java.nio.charset.Charset;
@@ -24,11 +25,11 @@ public class Client {
     private MainController controller;
     private Gson gson;
     private DateFormat dateFormat;
-    private ClientStatus status;
+    private UserStatus status;
 
 
     // tymczasowe rozwiazania
-    private int clientId=1;
+    public int clientId=2;
 
     public Client(int port, String host, String topic, MainController controller) {
         this.port = port;
@@ -45,6 +46,7 @@ public class Client {
         client.publishHandler(publish -> {
             System.out.println("Just received message on [" + publish.topicName() + "] payload [" + publish.payload().toString(Charset.defaultCharset()) + "] with QoS [" + publish.qosLevel() + "]");
             controller.showMessage(publish.payload().toString());
+            controller.updateClientsList(publish.payload().toString());
         });
 
         client.closeHandler(event -> {
@@ -60,7 +62,7 @@ public class Client {
             if (ch.succeeded()) {
                 System.out.println("Connected to a server");
                 client.subscribe(topic, 0);
-                status=ClientStatus.AVAILABLE;
+                status= UserStatus.AVAILABLE;
             } else {
                 System.out.println("Failed to connect to a server");
                 //System.out.println(ch.cause());
@@ -79,26 +81,28 @@ public class Client {
     public void publishMessage(String message) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(1, clientId, dateFormat.format(new Date()), message, null), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE.value(), clientId,
+                        dateFormat.format(new Date()), message, null, null, null), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
     }
 
-    public void changeStatus(ClientStatus status) {
+    public void changeStatus(UserStatus status) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(0, clientId, dateFormat.format(new Date()), null, status), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE.value(), clientId,
+                        dateFormat.format(new Date()), null, status, null, null), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
     }
 
-    public ClientStatus getStatus() {
+    public UserStatus getStatus() {
         return status;
     }
 
-    public void setStatus(ClientStatus status) {
+    public void setStatus(UserStatus status) {
         this.status = status;
     }
 }

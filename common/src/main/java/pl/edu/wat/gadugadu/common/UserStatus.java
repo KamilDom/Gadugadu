@@ -1,6 +1,6 @@
 package pl.edu.wat.gadugadu.common;
 
-public enum ClientStatus {
+public enum UserStatus {
     AVAILABLE(0),
     BUSY(1),
     DO_NOT_DISTURB(2),
@@ -12,7 +12,7 @@ public enum ClientStatus {
             "/ava","/busy","/dnd","/away","/brb"
     };
 
-    ClientStatus(int value) {
+    UserStatus(int value) {
         this.value = value;
     }
 
@@ -20,8 +20,8 @@ public enum ClientStatus {
         return value;
     }
 
-    public static ClientStatus valueOf(int value) {
-        for (ClientStatus s: values()) {
+    public static UserStatus valueOf(int value) {
+        for (UserStatus s: values()) {
             if (s.value == value) {
                 return s;
             }
