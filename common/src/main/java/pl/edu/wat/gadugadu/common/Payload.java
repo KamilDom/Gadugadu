@@ -5,6 +5,7 @@ import java.util.List;
 public class Payload {
     private PayloadType contentType;
     private Integer clientId;
+    private Integer destinationId;
     private String date;
     private String content;
     private UserStatus status;
@@ -21,12 +22,54 @@ public class Payload {
         this.usersInfo = usersInfo;
     }
 
+    //status
+    public Payload(PayloadType contentType, Integer clientId, UserStatus status) {
+        this.contentType = contentType;
+        this.clientId = clientId;
+        this.status = status;
+    }
+
+    //message
+    public Payload(PayloadType contentType, Integer clientId, Integer destinationId, String date, String content) {
+        this.contentType = contentType;
+        this.clientId = clientId;
+        this.destinationId = destinationId;
+        this.date = date;
+        this.content = content;
+    }
+
+    //login
+    public Payload(PayloadType contentType, Integer clientId, UserStatus status, Authentication authentication) {
+        this.contentType = contentType;
+        this.clientId = clientId;
+        this.status = status;
+        this.authentication = authentication;
+    }
+
+    //online users list
+    public Payload(PayloadType contentType, List<UserInfo> onlineUsers) {
+        this.contentType = contentType;
+        this.usersInfo = onlineUsers;
+    }
+
+    public Payload(PayloadType contentType, Integer clientId, String date, String content) {
+        this.contentType = contentType;
+        this.clientId = clientId;
+        this.date = date;
+        this.content = content;
+    }
+
+
     public PayloadType getContentType() {
         return contentType;
     }
 
     public Integer getClientId() {
         return clientId;
+    }
+
+    public Integer getDestinationId() {
+        return destinationId;
     }
 
     public String getDate() {

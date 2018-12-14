@@ -2,10 +2,11 @@ package pl.edu.wat.gadugadu.common;
 
 public enum PayloadType {
     AUTHENTICATION(0),
-    STATUS_UPDATE(1),
-    ONLINE_USERS_LIST(2),
-    MESSAGE(3),
-    IMAGE(4);
+    START_CONVERSATION(1),
+    STATUS_UPDATE(2),
+    ONLINE_USERS_LIST(3),
+    MESSAGE(4),
+    IMAGE(5);
 
     private final int value;
 

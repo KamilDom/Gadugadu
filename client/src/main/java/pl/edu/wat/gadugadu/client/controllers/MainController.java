@@ -157,15 +157,16 @@ public class MainController {
             for (UserInfo userInfo : onlineUsers) {
                 try {
                     VBox vBox = new VBox();
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/userInfo.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/contactInfo.fxml"));
                     Parent parent = loader.load();
-                    UserInfoController userInfoController = loader.getController();
-                    userInfoController.setClient(Main.client);
-                    userInfoController.userName.setText(userInfo.getDefaultNick()+" ("+userInfo.getClientId()+")");
-                    userInfoController.status.setText(userInfo.getUserStatus().name());
+                    ContactInfoController contactInfoController = loader.getController();
+                    contactInfoController.userName.setText(userInfo.getDefaultNick()+" ("+userInfo.getClientId()+")");
+                    contactInfoController.status.setText(userInfo.getUserStatus().name());
+                    contactInfoController.setId(userInfo.getClientId());
+                    contactInfoController.setCircleStroke(userInfo.getUserStatus());
 
                     Image img = new Image("/blank-profile-picture.png");
-                    userInfoController.userImage.setFill(new ImagePattern(img));
+                    contactInfoController.userImage.setFill(new ImagePattern(img));
 
                     vBox.getChildren().addAll(parent);
                     contactsListScrollBox.getChildren().add(vBox);

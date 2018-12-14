@@ -6,7 +6,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
-import javafx.fxml.FXMLLoader;
 import pl.edu.wat.gadugadu.common.*;
 
 import java.nio.charset.Charset;
@@ -25,6 +24,7 @@ public class Client {
 
     // tymczasowe rozwiazania
     public int clientId=75;
+    public int destinationId=55;
 
     public Client(int port, String host, String topic) {
         this.port = port;
@@ -43,7 +43,7 @@ public class Client {
 
             switch(payload.getContentType()){
                 case STATUS_UPDATE:
-
+                    // na razie update całej listy, może później się dorobi update pojedynczego uzytkownika
                     break;
                 case ONLINE_USERS_LIST:
                     Main.mainController.updateClientsList(payload.getUsersInfo());
@@ -96,19 +96,18 @@ public class Client {
     public void login(String login, String password) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, clientId,
-                        dateFormat.format(new Date()), null, UserStatus.AVAILABLE, new Authentication(login,password),null), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, clientId, UserStatus.AVAILABLE, new Authentication(login,password)), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
         client.subscribe(topic, 0);
+        client.subscribe(String.valueOf(clientId), 0);
     }
 
     public void publishMessage(String message) {
         client.publish(
-                topic,
-                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, clientId,
-                        dateFormat.format(new Date()), message, null, null, null), Payload.class)),
+                String.valueOf(destinationId),
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, clientId, destinationId, dateFormat.format(new Date()), message), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
@@ -117,8 +116,7 @@ public class Client {
     public void changeStatus(UserStatus status) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE, clientId,
-                        dateFormat.format(new Date()), null, status, null, null), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE, clientId, status), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);

@@ -98,11 +98,6 @@ public class Server {
                         endpoint.unsubscribeAcknowledge(unsubscribe.messageId());
                     });
 
-                    // handling ping from client
-                   /*   endpoint.pingHandler(v -> {
-
-                        System.out.println("Ping received from client");
-                    });*/
 
                     // handling disconnect message
                     endpoint.disconnectHandler(v -> {
@@ -137,11 +132,12 @@ public class Server {
 
                         switch(payload.getContentType()){
                             case AUTHENTICATION: {
-                               // endpoint.accept(true);
-                                System.out.println("tess");
                                 onlineUsers.add(new UserInfo(endpoint.clientIdentifier(), payload.getClientId(), "Edek", "", payload.getStatus(), endpoint));
                                 publishClientsList();
                             }
+                                break;
+                            case START_CONVERSATION:
+
                                 break;
                             case STATUS_UPDATE:
                                 onlineUsers.stream()
@@ -155,7 +151,26 @@ public class Server {
                                 publishClientsList();
                                 break;
                             case MESSAGE:
-
+                                onlineUsers.stream()
+                                        .filter(userInfo -> userInfo.getClientId()==payload.getDestinationId())
+                                        .findAny()
+                                        .ifPresentOrElse(userInfo -> userInfo.getEndpoint().publish(
+                                                String.valueOf(payload.getClientId()),
+                                                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, payload.getClientId(), payload.getDate(),
+                                                        payload.getContent()), Payload.class)),
+                                                MqttQoS.AT_MOST_ONCE,
+                                                false,
+                                                false), () -> System.out.println("User not found"));
+                                onlineUsers.stream()
+                                        .filter(userInfo -> userInfo.getClientId()==payload.getClientId())
+                                        .findAny()
+                                        .ifPresentOrElse(userInfo -> userInfo.getEndpoint().publish(
+                                                String.valueOf(payload.getClientId()),
+                                                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, payload.getClientId(), payload.getDate(),
+                                                        payload.getContent()), Payload.class)),
+                                                MqttQoS.AT_MOST_ONCE,
+                                                false,
+                                                false), () -> System.out.println("User not found"));
                                 break;
                             case IMAGE:
 
@@ -220,17 +235,13 @@ public class Server {
     }
 */
     public void publishClientsList(){
-        System.out.println(onlineUsers.size());
-       // for (Map.Entry<Integer, UserInfo> userInfo: onlineUsers.entrySet()) {
         for(UserInfo userInfo: onlineUsers){
                 userInfo.getEndpoint().publish(
                         topic,
-                        Buffer.buffer(gson.toJson(new Payload(PayloadType.ONLINE_USERS_LIST, null, null, null,
-                                null, null, onlineUsers), Payload.class)),
+                        Buffer.buffer(gson.toJson(new Payload(PayloadType.ONLINE_USERS_LIST, onlineUsers), Payload.class)),
                         MqttQoS.AT_MOST_ONCE,
                         false,
                         false);
-
         }
     }
 
