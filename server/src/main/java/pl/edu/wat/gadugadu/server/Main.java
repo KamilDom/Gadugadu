@@ -43,10 +43,11 @@ public class Main extends Application {
         primaryStage.setTitle("Gadugadu Server");
         primaryStage.setScene(scene);
         primaryStage.show();
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                sessionFactory.close();
+        primaryStage.setOnCloseRequest(event -> {
+            try{
+            sessionFactory.close();
+            } catch (NullPointerException e){
+                System.err.println("NullPointerException on turning off server due to not existing database");
             }
         });
     }
