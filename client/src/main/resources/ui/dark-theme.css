@@ -2,6 +2,8 @@
 * {
     -fx-primary : #2A2E37;
     -fx-secondary : #FFFF8D;
+    -fx-secondary-transparent20 : rgba(255, 255, 141, 0.21);
+    -fx-secondary-transparent50 : rgba(255, 255, 141, 0.51);
     -fx-primarytext : #B2B2B2;
     -fx-blue: #1976D2;
     -fx-red: #FF0000;
@@ -75,6 +77,15 @@
 .dark-background{
     -fx-background-color: -fx-primary;
 }
+
+.highlighted-background{
+    -fx-background-color: -fx-secondary-transparent20;
+}
+
+.brighter-highlighted-background{
+    -fx-background-color: -fx-secondary-transparent50;
+}
+
 
 .message-user-text{
     -fx-text-fill: -fx-primarytext;

@@ -107,8 +107,13 @@ public class Server {
                         onlineUsers.stream()
                                 .filter(userInfo -> userInfo.getClientIdentifier().equals(endpoint.clientIdentifier()))
                                 .findAny()
-                                .ifPresentOrElse(userInfo -> onlineUsers.remove(userInfo), () -> System.out.println("User not found"));
-                        publishClientsList();
+                                .ifPresentOrElse(userInfo -> {
+                                    userInfo.setUserStatus(UserStatus.OFFLINE);
+                                    System.out.println("przed usunieciem "+onlineUsers.size());
+                                    onlineUsers.remove(userInfo);
+                                    publishStatusUpdate(userInfo);
+                                    System.out.println("po usunieciu "+onlineUsers.size());
+                                }, () -> System.out.println("User not found"));
                     });
 
                     // handling closing connection
@@ -119,8 +124,13 @@ public class Server {
                         onlineUsers.stream()
                                 .filter(userInfo -> userInfo.getClientIdentifier().equals(endpoint.clientIdentifier()))
                                 .findAny()
-                                .ifPresentOrElse(userInfo -> onlineUsers.remove(userInfo), () -> System.out.println("User not found"));
-                        publishClientsList();
+                                .ifPresentOrElse(userInfo -> {
+                                    userInfo.setUserStatus(UserStatus.OFFLINE);
+                                    System.out.println("przed usunieciem "+onlineUsers.size());
+                                    onlineUsers.remove(userInfo);
+                                    publishStatusUpdate(userInfo);
+                                    System.out.println("po usunieciu "+onlineUsers.size());
+                                }, () -> System.out.println("User not found"));
                     });
 
                     // handling incoming published messages
@@ -131,32 +141,38 @@ public class Server {
                         Payload payload = gson.fromJson(message.payload().toString(), Payload.class);
 
                         switch(payload.getContentType()){
-                            case AUTHENTICATION: {
-                                onlineUsers.add(new UserInfo(endpoint.clientIdentifier(), payload.getClientId(), "Edek", "", payload.getStatus(), endpoint));
-                                publishClientsList();
-                            }
+                            case AUTHENTICATION:
+                                System.out.println("przed dodarniem "+onlineUsers.size());
+                                UserInfo u = new UserInfo(endpoint.clientIdentifier(), payload.getClientId(), "Edek", "", payload.getStatus(), endpoint);
+                                publishNewConnectedClientInfo(u);
+                                publishClientsList(endpoint);
+                                onlineUsers.add(u);
+                                System.out.println("po dodarniem "+onlineUsers.size());
+
                                 break;
-                            case START_CONVERSATION:
+                            case NEW_CLIENT_CONNECTED:
 
                                 break;
                             case STATUS_UPDATE:
                                 onlineUsers.stream()
                                         .filter(userInfo -> userInfo.getClientId()==payload.getClientId())
                                         .findAny()
-                                        .ifPresentOrElse(userInfo -> userInfo.setUserStatus(payload.getStatus()), () -> System.out.println("User not found"));
+                                        .ifPresentOrElse(userInfo -> {userInfo.setUserStatus(payload.getStatus());
+                                                publishStatusUpdate(userInfo);
+                                                },
+                                                () -> System.out.println("User not found"));
 
-                                publishClientsList();
                                 break;
                             case ONLINE_USERS_LIST:
-                                publishClientsList();
+
                                 break;
                             case MESSAGE:
                                 onlineUsers.stream()
                                         .filter(userInfo -> userInfo.getClientId()==payload.getDestinationId())
                                         .findAny()
                                         .ifPresentOrElse(userInfo -> userInfo.getEndpoint().publish(
-                                                String.valueOf(payload.getClientId()),
-                                                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, payload.getClientId(), payload.getDate(),
+                                                topic,
+                                                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, payload.getClientId(),  payload.getDestinationId(), payload.getDate(),
                                                         payload.getContent()), Payload.class)),
                                                 MqttQoS.AT_MOST_ONCE,
                                                 false,
@@ -165,8 +181,8 @@ public class Server {
                                         .filter(userInfo -> userInfo.getClientId()==payload.getClientId())
                                         .findAny()
                                         .ifPresentOrElse(userInfo -> userInfo.getEndpoint().publish(
-                                                String.valueOf(payload.getClientId()),
-                                                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, payload.getClientId(), payload.getDate(),
+                                                topic,
+                                                Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, payload.getClientId(),  payload.getDestinationId(), payload.getDate(),
                                                         payload.getContent()), Payload.class)),
                                                 MqttQoS.AT_MOST_ONCE,
                                                 false,
@@ -213,35 +229,38 @@ public class Server {
     }
 
 
-  /*  public void publishMessage(String message){
-        for (MqttEndpoint endpoint : connectedClients) {
-            endpoint.publish(topic,
-                    Buffer.buffer(message),
+    public void publishClientsList(MqttEndpoint endpoint){
+        System.out.println("publish clients list");
+        endpoint.publish(
+                    topic,
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.ONLINE_USERS_LIST, onlineUsers), Payload.class)),
                     MqttQoS.AT_MOST_ONCE,
                     false,
                     false);
-        }
     }
 
+    public void publishNewConnectedClientInfo(UserInfo newConnectedClientInfo){
 
-    public void publishTestMessage(String message) {
-        for (MqttEndpoint endpoint : connectedClients) {
-            endpoint.publish(topic,
-                    Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE.value(), 0, dateFormat.format(new Date()), message, null, null, null), Payload.class)),
-                    MqttQoS.AT_MOST_ONCE,
-                    false,
-                    false);
-        }
-    }
-*/
-    public void publishClientsList(){
         for(UserInfo userInfo: onlineUsers){
-                userInfo.getEndpoint().publish(
-                        topic,
-                        Buffer.buffer(gson.toJson(new Payload(PayloadType.ONLINE_USERS_LIST, onlineUsers), Payload.class)),
-                        MqttQoS.AT_MOST_ONCE,
-                        false,
-                        false);
+            System.out.println("publish new connected client "+userInfo.getClientId() );
+            userInfo.getEndpoint().publish(
+                    topic,
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.NEW_CLIENT_CONNECTED, newConnectedClientInfo), Payload.class)),
+                    MqttQoS.AT_MOST_ONCE,
+                    false,
+                    false);
+        }
+    }
+
+    public void publishStatusUpdate(UserInfo updatedUser){
+        for(UserInfo userInfo: onlineUsers){
+            System.out.println("publish status update "+userInfo.getClientId());
+            userInfo.getEndpoint().publish(
+                    topic,
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE, updatedUser.getClientId(),updatedUser.getUserStatus()), Payload.class)),
+                    MqttQoS.AT_MOST_ONCE,
+                    false,
+                    false);
         }
     }
 

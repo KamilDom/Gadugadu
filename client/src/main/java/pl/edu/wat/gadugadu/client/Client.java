@@ -11,7 +11,7 @@ import pl.edu.wat.gadugadu.common.*;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
 
 public class Client {
     private int port;
@@ -21,10 +21,12 @@ public class Client {
     private MqttClient client;
     private Gson gson;
     private DateFormat dateFormat;
+    private UserStatus status;
 
     // tymczasowe rozwiazania
-    public int clientId=75;
-    public int destinationId=55;
+    Random r = new Random();
+    public int clientId=r.nextInt(99)+1;
+    //public int clientId=66;
 
     public Client(int port, String host, String topic) {
         this.port = port;
@@ -32,6 +34,8 @@ public class Client {
         this.topic = topic;
         gson = new Gson();
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+
+        status = UserStatus.AVAILABLE;
 
         options = new MqttClientOptions().setKeepAliveTimeSeconds(30);
 
@@ -42,13 +46,17 @@ public class Client {
             Payload payload = gson.fromJson(publish.payload().toString(), Payload.class);
 
             switch(payload.getContentType()){
+                case NEW_CLIENT_CONNECTED:
+                    Main.mainController.addToContactList(payload.getUserInfo());
+                    break;
                 case STATUS_UPDATE:
-                    // na razie update całej listy, może później się dorobi update pojedynczego uzytkownika
+                    Main.mainController.updateContactStatus(payload);
                     break;
                 case ONLINE_USERS_LIST:
-                    Main.mainController.updateClientsList(payload.getUsersInfo());
+                    Main.mainController.showContactsList(payload.getUsersInfo());
                     break;
                 case MESSAGE:
+                    Main.mainController.addToMessagesList(payload);
                     Main.mainController.showMessage(payload);
                     break;
                 case IMAGE:
@@ -93,6 +101,10 @@ public class Client {
         return client.isConnected();
     }
 
+    public UserStatus getStatus() {
+        return status;
+    }
+
     public void login(String login, String password) {
         client.publish(
                 topic,
@@ -104,7 +116,7 @@ public class Client {
         client.subscribe(String.valueOf(clientId), 0);
     }
 
-    public void publishMessage(String message) {
+    public void publishMessage(String message, Integer destinationId) {
         client.publish(
                 String.valueOf(destinationId),
                 Buffer.buffer(gson.toJson(new Payload(PayloadType.MESSAGE, clientId, destinationId, dateFormat.format(new Date()), message), Payload.class)),
@@ -114,6 +126,7 @@ public class Client {
     }
 
     public void changeStatus(UserStatus status) {
+        this.status=status;
         client.publish(
                 topic,
                 Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE, clientId, status), Payload.class)),

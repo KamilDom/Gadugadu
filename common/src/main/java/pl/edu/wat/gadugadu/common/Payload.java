@@ -11,6 +11,7 @@ public class Payload {
     private UserStatus status;
     private Authentication authentication;
     private List<UserInfo> usersInfo;
+    private UserInfo userInfo;
 
     public Payload(PayloadType contentType, Integer clientId, String date, String content, UserStatus status, Authentication authentication, List<UserInfo> usersInfo) {
         this.contentType = contentType;
@@ -52,11 +53,10 @@ public class Payload {
         this.usersInfo = onlineUsers;
     }
 
-    public Payload(PayloadType contentType, Integer clientId, String date, String content) {
+    // new connected client
+    public Payload(PayloadType contentType, UserInfo userInfo) {
         this.contentType = contentType;
-        this.clientId = clientId;
-        this.date = date;
-        this.content = content;
+        this.userInfo = userInfo;
     }
 
 
@@ -90,5 +90,9 @@ public class Payload {
 
     public List<UserInfo> getUsersInfo() {
         return usersInfo;
+    }
+
+    public UserInfo getUserInfo() {
+        return userInfo;
     }
 }

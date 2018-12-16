@@ -4,23 +4,24 @@ import com.google.gson.Gson;
 import com.jfoenix.controls.JFXTextArea;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.ImagePattern;
 import javafx.stage.Stage;
+import pl.edu.wat.gadugadu.client.Contact;
 import pl.edu.wat.gadugadu.client.Main;
+import pl.edu.wat.gadugadu.client.Message;
 import pl.edu.wat.gadugadu.client.controllers.messageViewControllers.MessageViewController;
 import pl.edu.wat.gadugadu.common.UserInfo;
 import pl.edu.wat.gadugadu.common.UserStatus;
 import pl.edu.wat.gadugadu.common.Payload;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class MainController {
 
@@ -37,15 +38,23 @@ public class MainController {
 
     private Gson gson;
 
+    private int destinationId;
+
+    private Map<Integer, List<Payload>> messages;
+    private List<Contact> contacts = new ArrayList<>();
+
     public void initialize() {
         Main.mainController = this;
+        messages  = new LinkedHashMap<>();
         gson = new Gson();
-        contactsBox.setMinWidth(200);
+        contactsBox.setMinWidth(250);
         conversationBox.prefWidthProperty().bind(windowBox.widthProperty());
         messageScrollBox.heightProperty().addListener(observable -> messageScroll.setVvalue(1D));
         messageScrollBox.prefWidthProperty().bind(messageScroll.widthProperty());
         messageScrollBox.prefHeightProperty().bind(messageScroll.heightProperty());
-        messageField.setMinHeight(100);
+        messageField.setPrefHeight(0);
+        messageField.setMinHeight(0);
+
         messageScroll.prefHeightProperty().bind(windowBox.heightProperty());
         messageScroll.prefWidthProperty().bind(windowBox.widthProperty());
         messageScroll.setFitToWidth(true);
@@ -55,7 +64,6 @@ public class MainController {
         contactsListScrollBox.prefHeightProperty().bind(contactsListScroll.heightProperty());
         contactsListScroll.setFitToWidth(true);
         contactsListScroll.setFitToHeight(true);
-
         loadClientInfo();
 
         messageScrollBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
@@ -81,7 +89,7 @@ public class MainController {
                     .findAny()
                     .ifPresentOrElse(s -> Main.client.changeStatus(
                             UserStatus.valueOf(Arrays.asList(UserStatus.statusFromInputBox).indexOf(s))),
-                            () -> Main.client.publishMessage(removeLastChar(messageField.getText()))
+                            () -> Main.client.publishMessage(removeLastChar(messageField.getText()), destinationId)
                     );
 
             messageField.clear();
@@ -94,39 +102,50 @@ public class MainController {
     }
 
     public void showMessage(Payload payload) {
-        Platform.runLater(() -> {
-            VBox vBox = new VBox();
+        if(payload.getDestinationId()==destinationId & payload.getClientId()==Main.client.clientId
+        | payload.getDestinationId()==Main.client.clientId & payload.getClientId()==destinationId) {
+            Platform.runLater(() -> {
+                VBox vBox = new VBox();
 
-            FXMLLoader loader;
-            if (payload.getClientId() == Main.client.clientId) {
-                loader = new FXMLLoader(getClass().getResource("/messageView/outgoingMessage.fxml"));
-            } else {
-                loader = new FXMLLoader(getClass().getResource("/messageView/incomingMessage.fxml"));
-            }
+                FXMLLoader loader;
+                if (payload.getClientId() == Main.client.clientId) {
+                    loader = new FXMLLoader(getClass().getResource("/messageView/outgoingMessage.fxml"));
+                } else {
+                    loader = new FXMLLoader(getClass().getResource("/messageView/incomingMessage.fxml"));
+                }
 
-            Parent parent;
-            try {
-                parent = loader.load();
-                MessageViewController messageViewController = loader.getController();
-                messageViewController.userName.setText("xDD");
-                messageViewController.messageContent.setText(payload.getContent());
+                Parent parent;
+                try {
+                    parent = loader.load();
+                    MessageViewController messageViewController = loader.getController();
+                    messageViewController.userName.setText("xDD");
+                    messageViewController.messageContent.setText(payload.getContent());
 
-                messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
-                messageScrollBox.widthProperty().addListener(observable -> {
                     messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
-                });
+                    messageScrollBox.widthProperty().addListener(observable -> {
+                        messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
+                    });
 
-                Image img = new Image("/blank-profile-picture.png");
-                messageViewController.userImage.setFill(new ImagePattern(img));
+                    Image img = new Image("/blank-profile-picture.png");
+                    messageViewController.userImage.setFill(new ImagePattern(img));
 
-                vBox.getChildren().addAll(parent);
-                messageScrollBox.getChildren().add(vBox);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                    vBox.getChildren().addAll(parent);
+                    messageScrollBox.getChildren().add(vBox);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-        });
-
+            });
+        } else {
+            contacts.stream()
+                    .filter(contact -> contact.getId()==payload.getClientId())
+                    .findAny()
+                    .ifPresent(contact ->
+                            Platform.runLater(() ->{
+                                    contact.getContactInfoController().lastMessage.setText(payload.getContent());
+                                    contact.animation.play();
+                            }));
+        }
     }
 
     private void loadClientInfo() {
@@ -137,8 +156,8 @@ public class MainController {
             parent = loader.load();
             UserInfoController userInfoController = loader.getController();
             userInfoController.setClient(Main.client);
-            userInfoController.userName.setText("xDD");
-            userInfoController.status.setText("4");
+            userInfoController.userName.setText("xDD ("+Main.client.clientId+")");
+            userInfoController.status.setText(Main.client.getStatus().name());
 
             Image img = new Image("/blank-profile-picture.png");
             userInfoController.userImage.setFill(new ImagePattern(img));
@@ -151,32 +170,79 @@ public class MainController {
         }
     }
 
-    public void updateClientsList(List<UserInfo> onlineUsers) {
+    public void showContactsList(List<UserInfo> onlineUsers) {
         Platform.runLater(() -> {
             contactsListScrollBox.getChildren().clear();
             for (UserInfo userInfo : onlineUsers) {
-                try {
-                    VBox vBox = new VBox();
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/contactInfo.fxml"));
-                    Parent parent = loader.load();
-                    ContactInfoController contactInfoController = loader.getController();
-                    contactInfoController.userName.setText(userInfo.getDefaultNick()+" ("+userInfo.getClientId()+")");
-                    contactInfoController.status.setText(userInfo.getUserStatus().name());
-                    contactInfoController.setId(userInfo.getClientId());
-                    contactInfoController.setCircleStroke(userInfo.getUserStatus());
-
-                    Image img = new Image("/blank-profile-picture.png");
-                    contactInfoController.userImage.setFill(new ImagePattern(img));
-
-                    vBox.getChildren().addAll(parent);
-                    contactsListScrollBox.getChildren().add(vBox);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (userInfo.getClientId() != Main.client.clientId) {
+                    Contact contact = new Contact(userInfo.getClientId(), userInfo, this);
+                    contacts.add(contact);
+                    contactsListScrollBox.getChildren().add(contact.getvBox());
                 }
             }
 
-
         });
+    }
+
+    public void updateContactStatus(Payload payload){
+        contacts.stream()
+                .filter(contact -> contact.getId()==payload.getClientId())
+                .findAny()
+                .ifPresent(contact -> {
+                    if(payload.getStatus()==UserStatus.OFFLINE) {
+                        Platform.runLater(() -> contactsListScrollBox.getChildren().remove(contact.getvBox()));
+                        contacts.remove(contact);
+                    } else {
+                        Platform.runLater(() -> contact.setStatus(payload.getStatus()));
+                    }
+                });
+    }
+
+    public void addToContactList(UserInfo userInfo){
+        Platform.runLater(() -> {
+            Contact contact = new Contact(userInfo.getClientId(), userInfo, this);
+            contacts.add(contact);
+            contactsListScrollBox.getChildren().add(contact.getvBox());
+        });
+    }
+
+    public void addToMessagesList(Payload payload) {
+        if(payload.getClientId()==Main.client.clientId){
+            if (!messages.containsKey(destinationId))
+                messages.put(destinationId, new LinkedList<>());
+
+            messages.get(destinationId).add(payload);
+        } else {
+            if (!messages.containsKey(payload.getClientId()))
+                messages.put(payload.getClientId(), new LinkedList<>());
+
+            messages.get(payload.getClientId()).add(payload);
+        }
+    }
+
+    public void showConversationWithClient(int clientId){
+        Platform.runLater(() -> {
+            messageScrollBox.getChildren().clear();
+            if(messages.containsKey(clientId))
+            for(Payload payload: messages.get(clientId)){
+                showMessage(payload);
+            }
+        });
+    }
+
+    public void changeDestinationId(int destinationId) {
+        messageField.setMinHeight(100);
+        for(Contact c : contacts){
+            c.getContactInfoController().removeBrightestBackround();
+        }
+        contacts.stream()
+                .filter(contact -> contact.getId()==destinationId)
+                .findAny()
+                .ifPresent(contact -> {
+                    contact.animation.stop();
+                    contact.getvBox().setBackground(Background.EMPTY);
+                    contact.getContactInfoController().addBrightestBackround();
+                });
+        this.destinationId = destinationId;
     }
 }

@@ -9,6 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import pl.edu.wat.gadugadu.client.Client;
+import pl.edu.wat.gadugadu.client.Contact;
 import pl.edu.wat.gadugadu.client.Main;
 import pl.edu.wat.gadugadu.common.UserInfo;
 import pl.edu.wat.gadugadu.common.UserStatus;
@@ -19,9 +20,15 @@ public class ContactInfoController {
     public Label status;
     public VBox clientInfoVBox;
     public HBox contactBox;
-    // private Client client;
+    public Label lastMessage;
+    private MainController mainController;
+    private Contact contact;
 
     private int id;
+
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
+    }
 
     public void initialize() {
 
@@ -36,7 +43,8 @@ public class ContactInfoController {
     }
 
     public void onContactClick(MouseEvent mouseEvent) {
-        System.out.println(id);
+        mainController.changeDestinationId(id);
+        mainController.showConversationWithClient(id);
     }
 
     public void setCircleStroke(UserStatus userStatus){
@@ -63,9 +71,31 @@ public class ContactInfoController {
         }
     }
 
-    /*  public void setClient(Client client) {
-        this.client = client;
-    }*/
+    public void setContact(Contact contact) {
+        this.contact = contact;
+    }
+
+    public void onMouseEntered(MouseEvent mouseEvent) {
+        contact.setMouseEntered(true);
+        contactBox.getStyleClass().add("highlighted-background");
+
+    }
+
+    public void OnMouseExited(MouseEvent mouseEvent) {
+        contact.setMouseEntered(false);
+        contactBox.getStyleClass().remove("highlighted-background");
+    }
+
+    public void addBrightestBackround(){
+        contactBox.getStyleClass().add("brighter-highlighted-background");
+
+    }
+    public void removeBrightestBackround(){
+        contactBox.getStyleClass().remove("brighter-highlighted-background");
+
+    }
+
+
 
 
 }
