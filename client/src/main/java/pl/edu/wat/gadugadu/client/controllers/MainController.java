@@ -21,6 +21,9 @@ import pl.edu.wat.gadugadu.common.UserStatus;
 import pl.edu.wat.gadugadu.common.Payload;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MainController {
@@ -36,7 +39,8 @@ public class MainController {
     public ScrollPane messageScroll;
     public JFXTextArea messageField;
 
-    private Gson gson;
+    private DateFormat dateFormat;
+    private DateFormat dateFormatTime;
 
     private int destinationId;
 
@@ -46,7 +50,10 @@ public class MainController {
     public void initialize() {
         Main.mainController = this;
         messages  = new LinkedHashMap<>();
-        gson = new Gson();
+
+        dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+        dateFormatTime = new SimpleDateFormat("HH:mm");
+
         contactsBox.setMinWidth(250);
         conversationBox.prefWidthProperty().bind(windowBox.widthProperty());
         messageScrollBox.heightProperty().addListener(observable -> messageScroll.setVvalue(1D));
@@ -64,7 +71,7 @@ public class MainController {
         contactsListScrollBox.prefHeightProperty().bind(contactsListScroll.heightProperty());
         contactsListScroll.setFitToWidth(true);
         contactsListScroll.setFitToHeight(true);
-        loadClientInfo();
+
 
         messageScrollBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
             Platform.runLater(() -> {
@@ -103,7 +110,7 @@ public class MainController {
 
     public void showMessage(Payload payload) {
         if(payload.getDestinationId()==destinationId & payload.getClientId()==Main.client.clientId
-        | payload.getDestinationId()==Main.client.clientId & payload.getClientId()==destinationId) {
+        | payload.getDestinationId()==Main.client.clientId & payload.getClientId()==destinationId)
             Platform.runLater(() -> {
                 VBox vBox = new VBox();
 
@@ -118,7 +125,11 @@ public class MainController {
                 try {
                     parent = loader.load();
                     MessageViewController messageViewController = loader.getController();
-                    messageViewController.userName.setText("xDD");
+                    if (payload.getClientId() == Main.client.clientId) {
+                        messageViewController.userName.setText(dateFormatTime.format(dateFormat.parse(payload.getDate())) + ", " + "Tomek");
+                    } else {
+                        messageViewController.userName.setText( "Tomek"+", "+dateFormatTime.format(dateFormat.parse(payload.getDate())));
+                    }
                     messageViewController.messageContent.setText(payload.getContent());
 
                     messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
@@ -133,10 +144,12 @@ public class MainController {
                     messageScrollBox.getChildren().add(vBox);
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
 
             });
-        } else {
+        else {
             contacts.stream()
                     .filter(contact -> contact.getId()==payload.getClientId())
                     .findAny()
@@ -148,26 +161,28 @@ public class MainController {
         }
     }
 
-    private void loadClientInfo() {
+    public void loadClientInfo(String name) {
         VBox vBox = new VBox();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/userInfo.fxml"));
-        Parent parent;
-        try {
-            parent = loader.load();
-            UserInfoController userInfoController = loader.getController();
-            userInfoController.setClient(Main.client);
-            userInfoController.userName.setText("xDD ("+Main.client.clientId+")");
-            userInfoController.status.setText(Main.client.getStatus().name());
+        Platform.runLater(() -> {
+            Parent parent;
+            try {
+                parent = loader.load();
+                UserInfoController userInfoController = loader.getController();
+                userInfoController.setClient(Main.client);
+                userInfoController.userName.setText(name + " (" + Main.client.clientId + ")");
+                userInfoController.status.setText(Main.client.getStatus().name());
 
-            Image img = new Image("/blank-profile-picture.png");
-            userInfoController.userImage.setFill(new ImagePattern(img));
+                Image img = new Image("/blank-profile-picture.png");
+                userInfoController.userImage.setFill(new ImagePattern(img));
 
-            vBox.getChildren().addAll(parent);
-            userInfoBox.getChildren().add(vBox);
+                vBox.getChildren().addAll(parent);
+                userInfoBox.getChildren().add(vBox);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void showContactsList(List<UserInfo> onlineUsers) {

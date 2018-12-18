@@ -8,33 +8,42 @@ public class User {
     @Id
     @SequenceGenerator(name = "seq", sequenceName = "user_seq", allocationSize = 1)
     @GeneratedValue(generator = "seq")
-    private Long id;
-    private String defaultNick;
+    private Integer id;
+    private String name;
+    private String password;
     private String avatarURI;
 
 
-    public User(String defaultNick, String avatarURI) {
-        this.defaultNick = defaultNick;
-        this.avatarURI = avatarURI;
+    public User(String name, String password) {
+        this.name = name;
+        this.password = password;
     }
 
     public User() {
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getDefaultNick() {
-        return defaultNick;
+    public String getName() {
+        return name;
     }
 
-    public void setDefaultNick(String defaultNick) {
-        this.defaultNick = defaultNick;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getAvatarURI() {

@@ -29,5 +29,7 @@ public class Main extends Application {
         primaryStage.setTitle("Gadugadu Client");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+
     }
 }

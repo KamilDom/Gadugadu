@@ -14,19 +14,20 @@ import java.io.IOException;
 
 public class LoginController {
 
-    public JFXTextField username;
+    public JFXTextField id;
     public JFXPasswordField password;
+
 
     public void initialize() {
         Main.loginController=this;
-        username.setText("user");
-        password.setText("user");
+        id.setText("1");
+        password.setText("1234");
     }
 
 
 
     private void closeStage() {
-        ((Stage) username.getScene().getWindow()).close();
+        ((Stage) id.getScene().getWindow()).close();
     }
 
     void loadMain() {
@@ -43,30 +44,31 @@ public class LoginController {
     }
 
     public void onLogin(ActionEvent actionEvent) {
-        String uname = username.getText();
+        String uname = id.getText();
         String pword = password.getText();
 
-        Main.client.connect();
+        if(!Main.client.isConnected())
+            Main.client.connect();
 
         //TODO do kodowania w sha w bazie danych
         //String pword = DigestUtils.shaHex(password.getText());
 
 
-        if (uname.equals("user") && pword.equals("user")) {
+      //  if (uname.equals("1") && pword.equals("user")) {
             //if (uname.equals(preference.getUsername()) && pword.equals(preference.getPassword())) {
             closeStage();
             loadMain();
-            Main.client.login(uname,pword);
-
-        }
+            Main.client.login(Integer.valueOf(uname),pword);
+            Main.client.clientId=Integer.valueOf(uname);
+       /* }
         else {
-            username.getStyleClass().add("wrong-credentials");
+            id.getStyleClass().add("wrong-credentials");
             password.getStyleClass().add("wrong-credentials");
-        }
+        }*/
     }
 
     public void onExit(ActionEvent actionEvent) {
-        ((Stage) username.getScene().getWindow()).close();
+        ((Stage) id.getScene().getWindow()).close();
     }
 
     public void onRegister(ActionEvent actionEvent) {

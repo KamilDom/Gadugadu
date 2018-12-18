@@ -46,9 +46,9 @@ public class Contact {
         protected void interpolate(double frac) {
             Color vColor;
             if(mouseEntered)
-                vColor = new Color(1, 1, 141/255.0, (1 - frac)/2+0.2);
+                vColor = new Color(185/255.0, 185/255.0, 185/255.0, (1 - frac)/2+0.2);
             else
-                vColor = new Color(1, 1, 141/255.0, (1 - frac)/2);
+                vColor = new Color(185/255.0, 185/255.0, 185/255.0, (1 - frac)/2);
             vBox.setBackground(new Background(new BackgroundFill(vColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
     };

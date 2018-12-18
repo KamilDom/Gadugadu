@@ -3,6 +3,7 @@ package pl.edu.wat.gadugadu.client.controllers;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import pl.edu.wat.gadugadu.client.Client;
@@ -12,7 +13,7 @@ public class UserInfoController {
     public Circle userImage;
     public Label userName;
     public Label status;
-    public VBox clientInfoVBox;
+    public HBox userInfoBox;
     private ContextMenu contextMenu;
     private Client client;
 
@@ -27,8 +28,8 @@ public class UserInfoController {
 
         contextMenu.getItems().addAll(status1, status2, status3, status4, status5);
 
-        clientInfoVBox.setOnContextMenuRequested(event -> {
-            contextMenu.show(clientInfoVBox, event.getScreenX(), event.getScreenY());
+        userInfoBox.setOnContextMenuRequested(event -> {
+            contextMenu.show(userInfoBox, event.getScreenX(), event.getScreenY());
         });
 
         status1.setOnAction(event -> {

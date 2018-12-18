@@ -6,14 +6,14 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<HBox alignment="CENTER_LEFT" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.wat.gadugadu.client.controllers.UserInfoController">
+<HBox fx:id="userInfoBox" alignment="CENTER_LEFT" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.wat.gadugadu.client.controllers.UserInfoController">
     <children>
         <Circle fx:id="userImage" fill="DODGERBLUE" radius="25.0" stroke="BLACK" strokeType="INSIDE">
             <HBox.margin>
                 <Insets left="5.0" right="5.0" />
             </HBox.margin>
       </Circle>
-      <VBox fx:id="clientInfoVBox" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="message-cloud" stylesheets="@../ui/dark-theme.css">
+      <VBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="message-cloud" stylesheets="@../ui/dark-theme.css">
          <children>
             <Label fx:id="userName" styleClass="message-user-text" stylesheets="@../ui/dark-theme.css" text="Label" />
             <Label fx:id="status" alignment="CENTER_RIGHT" styleClass="message-content-text" stylesheets="@../ui/dark-theme.css" text="Label" wrapText="true" />

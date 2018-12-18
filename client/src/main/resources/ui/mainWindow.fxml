@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox fx:id="windowBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.wat.gadugadu.client.controllers.MainController">
+<HBox fx:id="windowBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" styleClass="dark-background" stylesheets="@dark-theme.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.wat.gadugadu.client.controllers.MainController">
    <children>
       <VBox fx:id="contactsBox" prefHeight="200.0" prefWidth="100.0" spacing="10.0" styleClass="dark-background" stylesheets="@dark-theme.css">
          <children>
@@ -16,7 +16,7 @@
                </VBox.margin></HBox>
             <ScrollPane fx:id="contactsListScroll" prefWidth="100.0">
                <content>
-                  <VBox fx:id="contactsListScrollBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="5.0" styleClass="dark-background" stylesheets="@dark-theme.css">
+                  <VBox fx:id="contactsListScrollBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="5.0" styleClass="darker-background" stylesheets="@dark-theme.css">
                      <padding>
                         <Insets bottom="10.0" top="10.0" />
                      </padding>
@@ -34,7 +34,13 @@
                      </padding></VBox>
                </content>
             </ScrollPane>
-            <JFXTextArea fx:id="messageField" onKeyPressed="#onEnter" prefHeight="100.0" styleClass="text-area" />
+            <JFXTextArea fx:id="messageField" onKeyPressed="#onEnter" promptText="Type message..." styleClass="text-area">
+               <VBox.margin>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </VBox.margin>
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding></JFXTextArea>
          </children>
       </VBox>
    </children>

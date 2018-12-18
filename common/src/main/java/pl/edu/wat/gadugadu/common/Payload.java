@@ -12,16 +12,7 @@ public class Payload {
     private Authentication authentication;
     private List<UserInfo> usersInfo;
     private UserInfo userInfo;
-
-    public Payload(PayloadType contentType, Integer clientId, String date, String content, UserStatus status, Authentication authentication, List<UserInfo> usersInfo) {
-        this.contentType = contentType;
-        this.clientId = clientId;
-        this.date = date;
-        this.content = content;
-        this.status = status;
-        this.authentication = authentication;
-        this.usersInfo = usersInfo;
-    }
+    private Registration registration;
 
     //status
     public Payload(PayloadType contentType, Integer clientId, UserStatus status) {
@@ -40,10 +31,15 @@ public class Payload {
     }
 
     //login
-    public Payload(PayloadType contentType, Integer clientId, UserStatus status, Authentication authentication) {
+    public Payload(PayloadType contentType, UserStatus status, Authentication authentication) {
         this.contentType = contentType;
-        this.clientId = clientId;
         this.status = status;
+        this.authentication = authentication;
+    }
+
+    //login response
+    public Payload(PayloadType contentType, Authentication authentication) {
+        this.contentType = contentType;
         this.authentication = authentication;
     }
 
@@ -58,6 +54,13 @@ public class Payload {
         this.contentType = contentType;
         this.userInfo = userInfo;
     }
+
+    //registration
+    public Payload(PayloadType contentType, Registration registration){
+        this.contentType = contentType;
+        this.registration = registration;
+    }
+
 
 
     public PayloadType getContentType() {
@@ -94,5 +97,9 @@ public class Payload {
 
     public UserInfo getUserInfo() {
         return userInfo;
+    }
+
+    public Registration getRegistration() {
+        return registration;
     }
 }

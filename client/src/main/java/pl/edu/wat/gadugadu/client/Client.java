@@ -8,6 +8,7 @@ import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
 import pl.edu.wat.gadugadu.common.*;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -22,11 +23,14 @@ public class Client {
     private Gson gson;
     private DateFormat dateFormat;
     private UserStatus status;
+    private int  connectionTimeout = 500; //5s
+
+
 
     // tymczasowe rozwiazania
     Random r = new Random();
-    public int clientId=r.nextInt(99)+1;
-    //public int clientId=66;
+   // public int clientId=r.nextInt(99)+1;
+    public int clientId;
 
     public Client(int port, String host, String topic) {
         this.port = port;
@@ -46,6 +50,9 @@ public class Client {
             Payload payload = gson.fromJson(publish.payload().toString(), Payload.class);
 
             switch(payload.getContentType()){
+                case AUTHENTICATION:
+                    Main.mainController.loadClientInfo(payload.getAuthentication().getName());
+                    break;
                 case NEW_CLIENT_CONNECTED:
                     Main.mainController.addToContactList(payload.getUserInfo());
                     break;
@@ -83,14 +90,24 @@ public class Client {
 
     public void connect(){
             //TODO dodanie obługi wyjątku w przypadku niepowodzenia połączenia
-       client.connect(port, host, ch -> {
-            if (ch.succeeded()) {
-                System.out.println("Connected to a server");
-            } else {
-                System.out.println("Failed to connect to a server");
-                //System.out.println(ch.cause());
+       client.connect(port, host, ch -> {});
+
+        while (connectionTimeout>0){
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        });
+            connectionTimeout--;
+            if(Main.client.isConnected()){
+                System.out.println("Connected to a server");
+                break;
+            }
+        }
+
+        if(connectionTimeout==0){
+            System.err.println("Failed to connect to a server");
+        }
     }
 
     public void disconnect(){
@@ -105,10 +122,10 @@ public class Client {
         return status;
     }
 
-    public void login(String login, String password) {
+    public void login(Integer id, String password) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, clientId, UserStatus.AVAILABLE, new Authentication(login,password)), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, UserStatus.AVAILABLE, new Authentication(id, password)), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
@@ -133,6 +150,19 @@ public class Client {
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
+    }
+
+    public void register(String name, String password){
+        client.publish(
+                topic,
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.REGISTRATION, new Registration (name, password)), Payload.class)),
+                MqttQoS.AT_MOST_ONCE,
+                false,
+                false);
+    }
+
+    public void sendImage(File file){
+
     }
 
 

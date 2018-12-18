@@ -7,11 +7,14 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
 import io.vertx.mqtt.MqttTopicSubscription;
-import pl.edu.wat.gadugadu.common.PayloadType;
-import pl.edu.wat.gadugadu.common.UserInfo;
-import pl.edu.wat.gadugadu.common.UserStatus;
-import pl.edu.wat.gadugadu.common.Payload;
+import javafx.collections.FXCollections;
+import org.hibernate.NonUniqueResultException;
+import org.hibernate.Session;
+import pl.edu.wat.gadugadu.common.*;
+import pl.edu.wat.gadugadu.server.database.User;
 
+import javax.persistence.NoResultException;
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -109,10 +112,8 @@ public class Server {
                                 .findAny()
                                 .ifPresentOrElse(userInfo -> {
                                     userInfo.setUserStatus(UserStatus.OFFLINE);
-                                    System.out.println("przed usunieciem "+onlineUsers.size());
                                     onlineUsers.remove(userInfo);
                                     publishStatusUpdate(userInfo);
-                                    System.out.println("po usunieciu "+onlineUsers.size());
                                 }, () -> System.out.println("User not found"));
                     });
 
@@ -126,10 +127,8 @@ public class Server {
                                 .findAny()
                                 .ifPresentOrElse(userInfo -> {
                                     userInfo.setUserStatus(UserStatus.OFFLINE);
-                                    System.out.println("przed usunieciem "+onlineUsers.size());
                                     onlineUsers.remove(userInfo);
                                     publishStatusUpdate(userInfo);
-                                    System.out.println("po usunieciu "+onlineUsers.size());
                                 }, () -> System.out.println("User not found"));
                     });
 
@@ -141,13 +140,40 @@ public class Server {
                         Payload payload = gson.fromJson(message.payload().toString(), Payload.class);
 
                         switch(payload.getContentType()){
+                            case REGISTRATION:
+                                User newUser = new User(payload.getRegistration().getName(), payload.getRegistration().getPassword());
+                                    try(Session session = Main.getSession()){
+                                        session.beginTransaction();
+
+                                        session.save(newUser);
+
+                                        session.getTransaction().commit();
+                                        session.close();
+                                    }
+                                    publishRegistrationStatus(endpoint, newUser.getId());
+                                break;
                             case AUTHENTICATION:
-                                System.out.println("przed dodarniem "+onlineUsers.size());
-                                UserInfo u = new UserInfo(endpoint.clientIdentifier(), payload.getClientId(), "Edek", "", payload.getStatus(), endpoint);
-                                publishNewConnectedClientInfo(u);
-                                publishClientsList(endpoint);
-                                onlineUsers.add(u);
-                                System.out.println("po dodarniem "+onlineUsers.size());
+                                try(Session session = Main.getSession()) {
+                                    session.beginTransaction();
+                                    String query = "from User where id="+payload.getAuthentication().getId();
+                                    User user = session.createQuery(query, User.class).getSingleResult();
+                                    session.getTransaction().commit();
+                                    session.close();
+
+                                    if(user.getPassword().equals(payload.getAuthentication().getPassword())){
+                                        publishLoginStatus(endpoint,user.getName());
+                                        System.out.println("przed dodarniem "+onlineUsers.size());
+                                        UserInfo u = new UserInfo(endpoint.clientIdentifier(), payload.getAuthentication().getId(), "aa", "", payload.getStatus(), endpoint);
+                                        publishNewConnectedClientInfo(u);
+                                        publishClientsList(endpoint);
+                                        onlineUsers.add(u);
+                                        System.out.println("po dodarniem "+onlineUsers.size());
+                                    } else {
+                                        publishLoginStatus(endpoint,null);
+                                    }
+                                } catch (NoResultException e){
+                                    publishLoginStatus(endpoint,null);
+                                }
 
                                 break;
                             case NEW_CLIENT_CONNECTED:
@@ -230,7 +256,6 @@ public class Server {
 
 
     public void publishClientsList(MqttEndpoint endpoint){
-        System.out.println("publish clients list");
         endpoint.publish(
                     topic,
                     Buffer.buffer(gson.toJson(new Payload(PayloadType.ONLINE_USERS_LIST, onlineUsers), Payload.class)),
@@ -242,7 +267,6 @@ public class Server {
     public void publishNewConnectedClientInfo(UserInfo newConnectedClientInfo){
 
         for(UserInfo userInfo: onlineUsers){
-            System.out.println("publish new connected client "+userInfo.getClientId() );
             userInfo.getEndpoint().publish(
                     topic,
                     Buffer.buffer(gson.toJson(new Payload(PayloadType.NEW_CLIENT_CONNECTED, newConnectedClientInfo), Payload.class)),
@@ -254,7 +278,6 @@ public class Server {
 
     public void publishStatusUpdate(UserInfo updatedUser){
         for(UserInfo userInfo: onlineUsers){
-            System.out.println("publish status update "+userInfo.getClientId());
             userInfo.getEndpoint().publish(
                     topic,
                     Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE, updatedUser.getClientId(),updatedUser.getUserStatus()), Payload.class)),
@@ -262,7 +285,46 @@ public class Server {
                     false,
                     false);
         }
+
     }
 
-    //TODO add db methods
+    public void publishRegistrationStatus(MqttEndpoint endpoint, Integer id){
+        if(id != null){
+            endpoint.publish(
+                    topic,
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.REGISTRATION, new Registration(id, RegistrationStatus.REGISTRATION_SUCCESSFUL)), Payload.class)),
+                    MqttQoS.AT_MOST_ONCE,
+                    false,
+                    false);
+        } else {
+            endpoint.publish(
+                    topic,
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.REGISTRATION, new Registration(id, RegistrationStatus.REGISTRATION_ERROR)), Payload.class)),
+                    MqttQoS.AT_MOST_ONCE,
+                    false,
+                    false);
+        }
+
+    }
+
+
+    public void publishLoginStatus(MqttEndpoint endpoint, String name) {
+        if (name!=null) {
+            endpoint.publish(
+                    topic,
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, new Authentication(name, AuthenticationStatus.SUCCESSFUL)), Payload.class)),
+                    MqttQoS.AT_MOST_ONCE,
+                    false,
+                    false);
+        } else {
+            endpoint.publish(
+                    topic,
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.REGISTRATION, new Authentication(AuthenticationStatus.ERROR)), Payload.class)),
+                    MqttQoS.AT_MOST_ONCE,
+                    false,
+                    false);
+        }
+    }
+
+        //TODO add db methods
 }

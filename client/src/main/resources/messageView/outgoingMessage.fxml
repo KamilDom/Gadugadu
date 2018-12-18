@@ -8,21 +8,31 @@
 
 <HBox alignment="CENTER_RIGHT" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.wat.gadugadu.client.controllers.messageViewControllers.MessageViewController">
     <children>
-        <VBox fx:id="messageVBox" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="message-cloud" stylesheets="@../ui/dark-theme.css">
-            <children>
-                <Label fx:id="userName" styleClass="message-user-text" stylesheets="@../ui/dark-theme.css" text="Label" />
-                <Label fx:id="messageContent" alignment="CENTER_RIGHT" styleClass="message-content-text" stylesheets="@../ui/dark-theme.css" text="Label" wrapText="true" />
-            </children>
-            <padding>
-                <Insets bottom="3.0" left="5.0" right="5.0" top="3.0" />
-            </padding>
+      <VBox alignment="CENTER_RIGHT">
+         <children>
+            <Label fx:id="userName" styleClass="message-user-text" stylesheets="@../ui/dark-theme.css" text="Label" />
+            <HBox alignment="CENTER_RIGHT">
+               <children>
+                  <VBox fx:id="messageVBox" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="message-outgoing-cloud" stylesheets="@../ui/dark-theme.css">
+                     <children>
+                        <Label fx:id="messageContent" styleClass="message-content-text" stylesheets="@../ui/dark-theme.css" text="Label" wrapText="true">
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="3.0" />
+                           </padding>
+                        </Label>
+                     </children>
+                     <padding>
+                        <Insets bottom="3.0" left="5.0" right="5.0" top="3.0" />
+                     </padding>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+        <Circle fx:id="userImage" fill="DODGERBLUE" radius="22.0" stroke="BLACK" strokeType="INSIDE">
             <HBox.margin>
-                <Insets />
-            </HBox.margin>
-        </VBox>
-        <Circle fx:id="userImage" fill="DODGERBLUE" radius="25.0" stroke="BLACK" strokeType="INSIDE">
-            <HBox.margin>
-                <Insets left="5.0" right="5.0" />
+                <Insets left="4.0" right="4.0" />
             </HBox.margin></Circle>
+
     </children>
 </HBox>

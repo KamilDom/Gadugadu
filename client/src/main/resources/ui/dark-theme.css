@@ -1,9 +1,13 @@
 
 * {
-    -fx-primary : #2A2E37;
-    -fx-secondary : #FFFF8D;
-    -fx-secondary-transparent20 : rgba(255, 255, 141, 0.21);
-    -fx-secondary-transparent50 : rgba(255, 255, 141, 0.51);
+    -fx-primary : #121212;
+    -fx-primary2 : #1C1C1C;
+    -fx-message-incoming-background : #232323;
+    -fx-message-outgoing-background : #323232;
+
+    -fx-secondary : #b9b9b9;
+    -fx-secondary-transparent20 : rgba(185, 185, 185, 0.21);
+    -fx-secondary-transparent50 : rgba(185, 185, 185, 0.51);
     -fx-primarytext : #B2B2B2;
     -fx-blue: #1976D2;
     -fx-red: #FF0000;
@@ -52,7 +56,6 @@
 
 .text-field
 {
-    -fx-text-fill: -fx-primarytext;
     -fx-font-size : 12pt;
     -jfx-focus-color: -fx-secondary;
     -fx-text-fill: derive(-fx-secondary, 20%);
@@ -60,13 +63,13 @@
 
 .text-area
 {
-    -fx-text-fill: -fx-primarytext;
+
     -fx-font-size : 12pt;
     -jfx-focus-color: -fx-secondary;
-    -fx-text-fill: derive(-fx-secondary, 20%);
-    -fx-background-color: -fx-primary;
-    -fx-border-color: -fx-secondary;
-    -fx-border-width: 2;
+    -fx-background-radius: 11;
+    -fx-text-fill: -fx-secondary;
+    -fx-background-color: -fx-primary2;
+
 }
 
 .scroll-pane
@@ -74,8 +77,16 @@
     -fx-background-color: transparent;
 }
 
+.scroll-bar:horizontal, .scroll-bar:vertical{
+    -fx-background-color:transparent;
+}
+
 .dark-background{
     -fx-background-color: -fx-primary;
+}
+
+.darker-background{
+    -fx-background-color: -fx-primary2;
 }
 
 .highlighted-background{
@@ -89,24 +100,28 @@
 
 .message-user-text{
     -fx-text-fill: -fx-primarytext;
-    -fx-font-size : 12pt;
-    -fx-font-weight: bold;
+    -fx-font-size : 10pt;
     -jfx-focus-color: -fx-secondary;
     -fx-text-fill: derive(-fx-secondary, 20%);
 }
 
 .message-content-text{
     -fx-text-fill: -fx-primarytext;
-    -fx-font-size : 9pt;
+    -fx-font-size : 12pt;
     -jfx-focus-color: -fx-secondary;
     -fx-text-fill: derive(-fx-secondary, 20%);
 }
 
-.message-cloud{
-    -fx-background-color: -fx-primary;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 141, 0.8), 10, 0, 0, 0);
+.message-incoming-cloud {
+    -fx-background-color: -fx-message-incoming-background;
+    -fx-background-radius: 11;
+    /* -fx-effect: dropshadow(three-pass-box, rgba(185, 185, 185, 0.8), 10, 0, 0, 0);*/
+}
 
+.message-outgoing-cloud {
+    -fx-background-color: -fx-message-outgoing-background;
+    -fx-background-radius: 11;
+   /* -fx-effect: dropshadow(three-pass-box, rgba(185, 185, 185, 0.8), 10, 0, 0, 0);*/
 }
 /*Login Screen Specific*/
 

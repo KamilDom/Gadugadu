@@ -48,7 +48,7 @@ public class ContactInfoController {
     }
 
     public void setCircleStroke(UserStatus userStatus){
-        userImage.setStrokeWidth(3);
+        userImage.setStrokeWidth(3.5);
         switch(userStatus){
             case AVAILABLE:
                 userImage.setStroke(Color.web("#00DC00"));
