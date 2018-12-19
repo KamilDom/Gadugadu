@@ -162,12 +162,10 @@ public class Server {
 
                                     if(user.getPassword().equals(payload.getAuthentication().getPassword())){
                                         publishLoginStatus(endpoint,user.getName());
-                                        System.out.println("przed dodarniem "+onlineUsers.size());
-                                        UserInfo u = new UserInfo(endpoint.clientIdentifier(), payload.getAuthentication().getId(), "aa", "", payload.getStatus(), endpoint);
+                                        UserInfo u = new UserInfo(endpoint.clientIdentifier(), payload.getAuthentication().getId(), user.getName(), "", payload.getStatus(), endpoint);
                                         publishNewConnectedClientInfo(u);
                                         publishClientsList(endpoint);
                                         onlineUsers.add(u);
-                                        System.out.println("po dodarniem "+onlineUsers.size());
                                     } else {
                                         publishLoginStatus(endpoint,null);
                                     }

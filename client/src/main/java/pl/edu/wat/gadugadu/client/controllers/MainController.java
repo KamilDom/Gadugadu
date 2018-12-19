@@ -42,6 +42,8 @@ public class MainController {
     private DateFormat dateFormat;
     private DateFormat dateFormatTime;
 
+    private String clientName;
+    private String destinationClientName;
     private int destinationId;
 
     private Map<Integer, List<Payload>> messages;
@@ -126,9 +128,9 @@ public class MainController {
                     parent = loader.load();
                     MessageViewController messageViewController = loader.getController();
                     if (payload.getClientId() == Main.client.clientId) {
-                        messageViewController.userName.setText(dateFormatTime.format(dateFormat.parse(payload.getDate())) + ", " + "Tomek");
+                        messageViewController.userName.setText(dateFormatTime.format(dateFormat.parse(payload.getDate())) + ", " + clientName);
                     } else {
-                        messageViewController.userName.setText( "Tomek"+", "+dateFormatTime.format(dateFormat.parse(payload.getDate())));
+                        messageViewController.userName.setText( destinationClientName+", "+dateFormatTime.format(dateFormat.parse(payload.getDate())));
                     }
                     messageViewController.messageContent.setText(payload.getContent());
 
@@ -170,6 +172,7 @@ public class MainController {
                 parent = loader.load();
                 UserInfoController userInfoController = loader.getController();
                 userInfoController.setClient(Main.client);
+                clientName=name;
                 userInfoController.userName.setText(name + " (" + Main.client.clientId + ")");
                 userInfoController.status.setText(Main.client.getStatus().name());
 
@@ -257,6 +260,7 @@ public class MainController {
                     contact.animation.stop();
                     contact.getvBox().setBackground(Background.EMPTY);
                     contact.getContactInfoController().addBrightestBackround();
+                    destinationClientName=contact.getContactName();
                 });
         this.destinationId = destinationId;
     }

@@ -7,10 +7,12 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import pl.edu.wat.gadugadu.client.controllers.LoginController;
 import pl.edu.wat.gadugadu.client.controllers.MainController;
+import pl.edu.wat.gadugadu.client.controllers.RegisterController;
 
 public class Main extends Application {
     public static Client client;
     public static LoginController loginController;
+    public static RegisterController registerController;
     public static MainController mainController;
 
     public static void main(String[] args) {

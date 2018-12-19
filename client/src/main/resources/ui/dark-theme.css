@@ -351,7 +351,7 @@
 /*JFXDialog styling*/
 .jfx-layout-heading
 {
-    -fx-background-color: -fx-color-1;
+    -fx-background-color: -fx-primary2;
 }
 .jfx-layout-heading .label
 {
@@ -359,7 +359,7 @@
     -fx-font-size: 12pt;
 }
 .jfx-layout-body, .jfx-layout-actions{
-    -fx-background-color: -fx-primary;
+    -fx-background-color: -fx-primary2;
 }
 .jfx-layout-body .label
 {

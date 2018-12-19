@@ -91,6 +91,10 @@ public class Contact {
         return id;
     }
 
+    public String getContactName(){
+        return userInfo.getDefaultNick();
+    }
+
     public ContactInfoController getContactInfoController() {
         return contactInfoController;
     }

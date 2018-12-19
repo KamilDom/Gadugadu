@@ -1,10 +1,18 @@
 package pl.edu.wat.gadugadu.client.controllers;
 
+import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXDialog;
+import com.jfoenix.controls.JFXDialogLayout;
 import com.jfoenix.controls.JFXTextField;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -21,6 +29,22 @@ public class RegisterController {
     public JFXTextField imagePath;
     public JFXTextField name;
     public JFXTextField password;
+    public StackPane registrationPane;
+    public VBox registrationVBox;
+
+    public void initialize() {
+        Main.registerController=this;
+
+        name.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            Platform.runLater(() -> {
+                Stage stage = (Stage) newScene.getWindow();
+                stage.setOnCloseRequest(e -> {
+                    loadLogin();
+                    closeStage();
+                });
+            });
+        });
+    }
 
     public void onCancel(ActionEvent actionEvent) {
         loadLogin();
@@ -84,5 +108,28 @@ public class RegisterController {
                 Main.client.connect();
                 Main.client.register(name.getText(), password.getText());
         }
+    }
+
+    public void showSuccesfulDialog(int id){
+        name.clear();
+        password.clear();
+        Platform.runLater(() -> {
+            BoxBlur boxBlur = new BoxBlur(3, 3, 3);
+            JFXDialogLayout dialogLayout = new JFXDialogLayout();
+            JFXButton button = new JFXButton("Ok");
+            JFXDialog dialog = new JFXDialog(registrationPane, dialogLayout, JFXDialog.DialogTransition.TOP);
+            button.setPrefWidth(100);
+            button.setOnAction(e -> dialog.close());
+
+            dialogLayout.setHeading(new Label("Registration successful. Your id: " + id));
+            dialogLayout.setActions(button);
+            dialog.show();
+            dialog.setOnDialogClosed(event -> {
+                loadLogin();
+                closeStage();
+            });
+
+            registrationVBox.setEffect(boxBlur);
+        });
     }
 }

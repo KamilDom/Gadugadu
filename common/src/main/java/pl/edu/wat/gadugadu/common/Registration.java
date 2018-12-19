@@ -24,4 +24,12 @@ public class Registration {
     public String getPassword() {
         return password;
     }
+
+    public Integer getNewId() {
+        return newId;
+    }
+
+    public RegistrationStatus getRegistrationStatus() {
+        return registrationStatus;
+    }
 }

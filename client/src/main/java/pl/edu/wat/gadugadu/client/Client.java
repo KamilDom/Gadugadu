@@ -50,9 +50,11 @@ public class Client {
             Payload payload = gson.fromJson(publish.payload().toString(), Payload.class);
 
             switch(payload.getContentType()){
+                case REGISTRATION:
+                    Main.registerController.showSuccesfulDialog(payload.getRegistration().getNewId());
+                    break;
                 case AUTHENTICATION:
                     Main.mainController.loadClientInfo(payload.getAuthentication().getName());
-                    break;
                 case NEW_CLIENT_CONNECTED:
                     Main.mainController.addToContactList(payload.getUserInfo());
                     break;

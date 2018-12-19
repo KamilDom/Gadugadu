@@ -1,22 +1,26 @@
 package pl.edu.wat.gadugadu.client.controllers;
 
-import com.jfoenix.controls.JFXPasswordField;
-import com.jfoenix.controls.JFXTextField;
+import com.jfoenix.controls.*;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import pl.edu.wat.gadugadu.client.Main;
 
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 public class LoginController {
 
     public JFXTextField id;
     public JFXPasswordField password;
-
 
     public void initialize() {
         Main.loginController=this;
@@ -78,9 +82,12 @@ public class LoginController {
             stage.setTitle("Gadugadu");
             stage.setScene(new Scene(parent));
             stage.show();
+            ((Stage) id.getScene().getWindow()).close();
         }
         catch (IOException ex) {
 
         }
     }
+
+
 }
