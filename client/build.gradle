@@ -6,7 +6,7 @@ plugins {
 version '1.0-SNAPSHOT'
 
 javafx {
-    modules = ['javafx.controls', 'javafx.fxml']
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.media']
 }
     
 run {

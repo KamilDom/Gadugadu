@@ -97,15 +97,18 @@ public class LoginController {
         Platform.runLater(() -> {
             BoxBlur boxBlur = new BoxBlur(3, 3, 3);
             JFXDialogLayout dialogLayout = new JFXDialogLayout();
-            JFXButton button = new JFXButton("Ok");
+            JFXButton button = new JFXButton("Cancel");
             JFXDialog dialog = new JFXDialog(loginPane, dialogLayout, JFXDialog.DialogTransition.TOP);
             button.setPrefWidth(100);
             button.setOnAction(e -> dialog.close());
 
-            dialogLayout.setHeading(new Label("Failed to connect to a server"));
+            Label label = new Label("Failed to connect to a server");
+            label.getStyleClass().add("jfx-layout-heading-error");
+            dialogLayout.setHeading(label);
             dialogLayout.setActions(button);
             dialog.show();
             dialog.setOnDialogClosed(event -> {
+                loginVBox.setEffect(null);
             });
 
             loginVBox.setEffect(boxBlur);

@@ -64,7 +64,7 @@ public class Contact {
             contactInfoController = loader.getController();
             contactInfoController.setContact(this);
             contactInfoController.userName.setText(userInfo.getDefaultNick() + " (" + userInfo.getClientId() + ")");
-            contactInfoController.status.setText(userInfo.getUserStatus().name());
+            contactInfoController.status.setText(UserStatus.statusNames[userInfo.getUserStatus().value()]);
             contactInfoController.setId(userInfo.getClientId());
             contactInfoController.setCircleStroke(userInfo.getUserStatus());
             contactInfoController.setMainController(mainController);
@@ -79,7 +79,7 @@ public class Contact {
     }
 
     public void setStatus(UserStatus userStatus){
-        contactInfoController.status.setText(userStatus.name());
+        contactInfoController.status.setText(UserStatus.statusNames[userStatus.value()]);
         contactInfoController.setCircleStroke(userStatus);
     }
 

@@ -21,6 +21,7 @@ public class ContactInfoController {
     public VBox clientInfoVBox;
     public HBox contactBox;
     public Label lastMessage;
+    public VBox contactVBox;
     private MainController mainController;
     private Contact contact;
 
@@ -49,26 +50,7 @@ public class ContactInfoController {
 
     public void setCircleStroke(UserStatus userStatus){
         userImage.setStrokeWidth(3.5);
-        switch(userStatus){
-            case AVAILABLE:
-                userImage.setStroke(Color.web("#00DC00"));
-                break;
-            case BUSY:
-                userImage.setStroke(Color.web("#ffff00"));
-                break;
-            case DO_NOT_DISTURB:
-                userImage.setStroke(Color.web("#ff7b00"));
-                break;
-            case AWAY:
-                userImage.setStroke(Color.web("#00a0ff"));
-                break;
-            case BE_RIGHT_BACK:
-                userImage.setStroke(Color.web("#0000ffff"));
-                break;
-
-            default:
-                //
-        }
+        userImage.setStroke(UserStatus.statusColors[userStatus.value()]);
     }
 
     public void setContact(Contact contact) {

@@ -2,19 +2,13 @@ package pl.edu.wat.gadugadu.client;
 
 import com.google.gson.Gson;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
-import io.vertx.mqtt.messages.MqttConnAckMessage;
-import javafx.application.Platform;
 import pl.edu.wat.gadugadu.common.*;
 
 import java.io.File;
-import java.net.ConnectException;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -30,8 +24,6 @@ public class Client {
     private DateFormat dateFormat;
     private UserStatus status;
     private int connectionTimeout = 500; //5s
-    private Handler<AsyncResult<MqttConnAckMessage>> connectHandler;
-
     public int clientId;
 
     public Client(int port, String host, String topic){
@@ -41,7 +33,7 @@ public class Client {
         gson = new Gson();
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
-        status = UserStatus.BUSY;
+        status = UserStatus.AVAILABLE;
 
         options = new MqttClientOptions().setKeepAliveTimeSeconds(30);
 
@@ -87,6 +79,9 @@ public class Client {
                     Main.mainController.showContactsList(payload.getUsersInfo());
                     break;
                 case MESSAGE:
+                    if (payload.getClientId() != clientId){
+                        Main.mainController.playMessageSound();
+                    }
                     Main.mainController.addToMessagesList(payload);
                     Main.mainController.showMessage(payload);
                     break;
@@ -111,14 +106,13 @@ public class Client {
 
     public void connect(){
         //TODO dodanie obługi wyjątku w przypadku niepowodzenia połączenia
+        connectionTimeout = 500;
         client.connect(port, host, ch -> {
-            if (ch.failed()) {
-                System.out.println(String.format("Can't connect to %s:%d", host, port, ch.cause()));
-                if (connectHandler != null) {
-                    connectHandler.handle(Future.failedFuture(ch.cause()));
-                }
+            if(ch.failed()){
+                Main.loginController.showErrorDialog();
+                connectionTimeout=0;
             }
-        });
+           });
 
         while (connectionTimeout > 0) {
             try {
@@ -155,7 +149,7 @@ public class Client {
     public void login(Integer id, String password) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, UserStatus.AVAILABLE, new Authentication(id, password)), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, status, new Authentication(id, password)), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);

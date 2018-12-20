@@ -10,6 +10,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
+import javafx.scene.media.AudioClip;
 import javafx.scene.paint.ImagePattern;
 import javafx.stage.Stage;
 import pl.edu.wat.gadugadu.client.Contact;
@@ -25,6 +26,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 
 public class MainController {
 
@@ -48,6 +50,10 @@ public class MainController {
 
     private Map<Integer, List<Payload>> messages;
     private List<Contact> contacts = new ArrayList<>();
+
+    UserInfoController userInfoController;
+
+    private AudioClip messageSound;
 
     public void initialize() {
         Main.mainController = this;
@@ -76,7 +82,8 @@ public class MainController {
         contactsListScroll.setFitToWidth(true);
         contactsListScroll.setFitToHeight(true);
 
-
+        messageSound= new AudioClip(this.getClass().getResource("/message-sound.mp3").toString());
+        messageSound.setVolume(0.3);
         messageScrollBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
             Platform.runLater(() -> {
                 Stage stage = (Stage) newScene.getWindow();
@@ -98,8 +105,11 @@ public class MainController {
             Arrays.stream(UserStatus.statusFromInputBox)
                     .filter(removeLastChar(messageField.getText())::equals)
                     .findAny()
-                    .ifPresentOrElse(s -> Main.client.changeStatus(
-                            UserStatus.valueOf(Arrays.asList(UserStatus.statusFromInputBox).indexOf(s))),
+                    .ifPresentOrElse(s -> {
+                        UserStatus newUserStatus = UserStatus.valueOf(Arrays.asList(UserStatus.statusFromInputBox).indexOf(s));
+                        Main.client.changeStatus(newUserStatus);
+                        userInfoController.setStatusLabel(UserStatus.statusNames[newUserStatus.value()]);
+                    },
                             () -> Main.client.publishMessage(removeLastChar(messageField.getText()), destinationId)
                     );
 
@@ -172,12 +182,12 @@ public class MainController {
             Parent parent;
             try {
                 parent = loader.load();
-                UserInfoController userInfoController = loader.getController();
+                userInfoController = loader.getController();
                 userInfoController.setClient(Main.client);
                 clientName=name;
                 userInfoController.userName.setText(name + " (" + Main.client.clientId + ")");
-                userInfoController.status.setText(Main.client.getStatus().name());
-
+                userInfoController.status.setText(UserStatus.statusNames[Main.client.getStatus().value()]);
+                userInfoController.setCircleStroke(Main.client.getStatus());
                 Image img = new Image("/blank-profile-picture.png");
                 userInfoController.userImage.setFill(new ImagePattern(img));
 
@@ -265,5 +275,9 @@ public class MainController {
                     destinationClientName=contact.getContactName();
                 });
         this.destinationId = destinationId;
+    }
+
+    public void playMessageSound(){
+        messageSound.play();
     }
 }

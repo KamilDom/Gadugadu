@@ -118,8 +118,10 @@ public class RegisterController {
             JFXDialog dialog = new JFXDialog(registrationPane, dialogLayout, JFXDialog.DialogTransition.TOP);
             button.setPrefWidth(100);
             button.setOnAction(e -> dialog.close());
+            Label label = new Label("Registration successful. Your id: " + id);
+            label.getStyleClass().add("jfx-layout-heading-message");
 
-            dialogLayout.setHeading(new Label("Registration successful. Your id: " + id));
+            dialogLayout.setHeading(label);
             dialogLayout.setActions(button);
             dialog.show();
             dialog.setOnDialogClosed(event -> {
