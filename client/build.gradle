@@ -25,6 +25,7 @@ dependencies {
 //    compile "org.openjfx:javafx-graphics:11:linux"
 //    compile "org.openjfx:javafx-graphics:11:mac"
     compile 'org.kordamp.ikonli:ikonli-swing:11.0.2'
+    compile 'de.jensd:fontawesomefx-commons:9.1.2'
 
 
 }

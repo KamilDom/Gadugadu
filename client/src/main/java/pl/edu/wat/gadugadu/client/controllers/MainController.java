@@ -52,7 +52,9 @@ public class MainController {
     public void initialize() {
         Main.mainController = this;
         messages  = new LinkedHashMap<>();
-
+       synchronized(Main.client) {
+           Main.client.notify();
+       }
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
         dateFormatTime = new SimpleDateFormat("HH:mm");
 

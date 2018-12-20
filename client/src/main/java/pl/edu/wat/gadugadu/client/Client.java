@@ -2,13 +2,19 @@ package pl.edu.wat.gadugadu.client;
 
 import com.google.gson.Gson;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
+import io.vertx.mqtt.messages.MqttConnAckMessage;
+import javafx.application.Platform;
 import pl.edu.wat.gadugadu.common.*;
 
 import java.io.File;
+import java.net.ConnectException;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,38 +29,53 @@ public class Client {
     private Gson gson;
     private DateFormat dateFormat;
     private UserStatus status;
-    private int  connectionTimeout = 500; //5s
+    private int connectionTimeout = 500; //5s
+    private Handler<AsyncResult<MqttConnAckMessage>> connectHandler;
 
-
-
-    // tymczasowe rozwiazania
-    Random r = new Random();
-   // public int clientId=r.nextInt(99)+1;
     public int clientId;
 
-    public Client(int port, String host, String topic) {
+    public Client(int port, String host, String topic){
         this.port = port;
         this.host = host;
         this.topic = topic;
         gson = new Gson();
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
-        status = UserStatus.AVAILABLE;
+        status = UserStatus.BUSY;
 
         options = new MqttClientOptions().setKeepAliveTimeSeconds(30);
 
         client = MqttClient.create(Vertx.vertx(), options);
 
+        client.exceptionHandler(event -> System.out.println("Ss"));
+
         client.publishHandler(publish -> {
             System.out.println("Just received message on [" + publish.topicName() + "] payload [" + publish.payload().toString(Charset.defaultCharset()) + "] with QoS [" + publish.qosLevel() + "]");
             Payload payload = gson.fromJson(publish.payload().toString(), Payload.class);
 
-            switch(payload.getContentType()){
+            switch (payload.getContentType()) {
                 case REGISTRATION:
                     Main.registerController.showSuccesfulDialog(payload.getRegistration().getNewId());
                     break;
                 case AUTHENTICATION:
-                    Main.mainController.loadClientInfo(payload.getAuthentication().getName());
+                    switch (payload.getAuthentication().getAuthenticationStatus()) {
+                        case SUCCESSFUL:
+                            Main.loginController.loadMainStage();
+                            Main.loginController.closeLoginStage();
+                            synchronized (this) {
+                                try {
+                                    wait();
+                                } catch (InterruptedException ie) {
+                                }
+                            }
+                            Main.mainController.loadClientInfo(payload.getAuthentication().getName());
+                            break;
+                        case ERROR:
+                            Main.loginController.showLoginError();
+                            break;
+                        default:
+                            //
+                    }
                     break;
                 case NEW_CLIENT_CONNECTED:
                     Main.mainController.addToContactList(payload.getUserInfo());
@@ -78,8 +99,6 @@ public class Client {
             }
 
 
-
-
         });
 
         client.closeHandler(event -> {
@@ -87,37 +106,45 @@ public class Client {
             System.out.println("Server down");
         });
 
-        }
-
+    }
 
 
     public void connect(){
-            //TODO dodanie obługi wyjątku w przypadku niepowodzenia połączenia
-       client.connect(port, host, ch -> {});
+        //TODO dodanie obługi wyjątku w przypadku niepowodzenia połączenia
+        client.connect(port, host, ch -> {
+            if (ch.failed()) {
+                System.out.println(String.format("Can't connect to %s:%d", host, port, ch.cause()));
+                if (connectHandler != null) {
+                    connectHandler.handle(Future.failedFuture(ch.cause()));
+                }
+            }
+        });
 
-        while (connectionTimeout>0){
+        while (connectionTimeout > 0) {
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             connectionTimeout--;
-            if(Main.client.isConnected()){
+            if (Main.client.isConnected()) {
                 System.out.println("Connected to a server");
                 break;
             }
         }
 
-        if(connectionTimeout==0){
+        if (connectionTimeout == 0) {
             System.err.println("Failed to connect to a server");
         }
+
+
     }
 
-    public void disconnect(){
+    public void disconnect() {
         client.disconnect();
     }
 
-    public boolean isConnected(){
+    public boolean isConnected() {
         return client.isConnected();
     }
 
@@ -146,7 +173,7 @@ public class Client {
     }
 
     public void changeStatus(UserStatus status) {
-        this.status=status;
+        this.status = status;
         client.publish(
                 topic,
                 Buffer.buffer(gson.toJson(new Payload(PayloadType.STATUS_UPDATE, clientId, status), Payload.class)),
@@ -155,16 +182,16 @@ public class Client {
                 false);
     }
 
-    public void register(String name, String password){
+    public void register(String name, String password) {
         client.publish(
                 topic,
-                Buffer.buffer(gson.toJson(new Payload(PayloadType.REGISTRATION, new Registration (name, password)), Payload.class)),
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.REGISTRATION, new Registration(name, password)), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);
     }
 
-    public void sendImage(File file){
+    public void sendImage(File file) {
 
     }
 

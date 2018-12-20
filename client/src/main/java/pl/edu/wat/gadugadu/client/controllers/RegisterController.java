@@ -1,9 +1,6 @@
 package pl.edu.wat.gadugadu.client.controllers;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXDialog;
-import com.jfoenix.controls.JFXDialogLayout;
-import com.jfoenix.controls.JFXTextField;
+import com.jfoenix.controls.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
@@ -28,9 +25,10 @@ public class RegisterController {
 
     public JFXTextField imagePath;
     public JFXTextField name;
-    public JFXTextField password;
+    public JFXPasswordField password;
     public StackPane registrationPane;
     public VBox registrationVBox;
+
 
     public void initialize() {
         Main.registerController=this;

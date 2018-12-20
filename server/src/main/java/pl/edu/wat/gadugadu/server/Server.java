@@ -317,7 +317,7 @@ public class Server {
         } else {
             endpoint.publish(
                     topic,
-                    Buffer.buffer(gson.toJson(new Payload(PayloadType.REGISTRATION, new Authentication(AuthenticationStatus.ERROR)), Payload.class)),
+                    Buffer.buffer(gson.toJson(new Payload(PayloadType.AUTHENTICATION, new Authentication(AuthenticationStatus.ERROR)), Payload.class)),
                     MqttQoS.AT_MOST_ONCE,
                     false,
                     false);

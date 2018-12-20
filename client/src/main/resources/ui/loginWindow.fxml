@@ -3,28 +3,40 @@
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXPasswordField?>
 <?import com.jfoenix.controls.JFXTextField?>
-<?import java.net.URL?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" fx:id="loginPane" prefHeight="367.0" prefWidth="419.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.wat.gadugadu.client.controllers.LoginController">
-    <children>
-        <JFXTextField fx:id="id" labelFloat="true" layoutX="95.0" layoutY="122.0" prefHeight="33.0" prefWidth="259.0" promptText="Id">
-            <font>
-                <Font size="16.0" />
-            </font>
-        </JFXTextField>
-        <JFXPasswordField fx:id="password" labelFloat="true" layoutX="97.0" layoutY="194.0" onAction="#onLogin" prefHeight="34.0" prefWidth="259.0" promptText="Password">
-            <font>
-                <Font size="17.0" />
-            </font>
-        </JFXPasswordField>
-        <JFXButton layoutX="52.0" layoutY="278.0" onAction="#onLogin" prefHeight="40.0" prefWidth="90.0" styleClass="login-button" text="Login" />
-        <JFXButton layoutX="276.0" layoutY="278.0" onAction="#onExit" prefHeight="40.0" prefWidth="90.0" styleClass="login-button" text="Exit" />
-      <JFXButton layoutX="164.0" layoutY="278.0" onAction="#onRegister" prefHeight="40.0" prefWidth="90.0" styleClass="login-button" text="Register" />
-
-    </children>
-   <stylesheets>
-      <URL value="@dark-theme.css" />
-   </stylesheets>
-</AnchorPane>
+<StackPane fx:id="loginPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="550.0" stylesheets="@dark-theme.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.wat.gadugadu.client.controllers.LoginController">
+   <children>
+      <VBox fx:id="loginVBox" alignment="CENTER" maxHeight="300.0" maxWidth="350.0" prefHeight="300.0" spacing="40.0">
+         <children>
+            <JFXTextField fx:id="id" labelFloat="true" prefHeight="33.0" prefWidth="259.0" promptText="Id">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </JFXTextField>
+            <JFXPasswordField fx:id="password" labelFloat="true" onAction="#onLogin" prefHeight="34.0" prefWidth="259.0" promptText="Password">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </JFXPasswordField>
+            <HBox maxWidth="350.0" prefWidth="150.0">
+               <children>
+                  <JFXButton onAction="#onLogin" prefHeight="40.0" prefWidth="90.0" styleClass="login-button" text="Login" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <JFXButton onAction="#onRegister" prefHeight="40.0" prefWidth="90.0" styleClass="login-button" text="Register" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <JFXButton onAction="#onExit" prefHeight="40.0" prefWidth="90.0" styleClass="login-button" text="Exit" />
+               </children>
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</StackPane>
