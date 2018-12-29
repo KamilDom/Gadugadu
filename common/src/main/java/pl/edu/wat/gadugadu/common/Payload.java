@@ -1,5 +1,6 @@
 package pl.edu.wat.gadugadu.common;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 public class Payload {
@@ -13,6 +14,8 @@ public class Payload {
     private List<UserInfo> usersInfo;
     private UserInfo userInfo;
     private Registration registration;
+    private byte[] fileContent;
+    private ImageStatus imageStatus;
 
     //status
     public Payload(PayloadType contentType, Integer clientId, UserStatus status) {
@@ -61,6 +64,20 @@ public class Payload {
         this.registration = registration;
     }
 
+    //image
+    public Payload(PayloadType contentType, Integer clientId, ImageStatus imageStatus, byte[] fileContent){
+        this.contentType = contentType;
+        this.clientId = clientId;
+        this.fileContent = fileContent;
+        this.imageStatus = imageStatus;
+    }
+
+    //image
+    public Payload(PayloadType contentType, int clientId, ImageStatus imageStatus) {
+        this.contentType = contentType;
+        this.clientId = clientId;
+        this.imageStatus = imageStatus;
+    }
 
 
     public PayloadType getContentType() {
@@ -101,5 +118,13 @@ public class Payload {
 
     public Registration getRegistration() {
         return registration;
+    }
+
+    public byte[] getFileContent() {
+        return fileContent;
+    }
+
+    public ImageStatus getImageStatus() {
+        return imageStatus;
     }
 }

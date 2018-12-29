@@ -9,7 +9,14 @@ import io.vertx.mqtt.MqttClientOptions;
 import pl.edu.wat.gadugadu.common.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -25,6 +32,9 @@ public class Client {
     private UserStatus status;
     private int connectionTimeout = 500; //5s
     public int clientId;
+    Path tempDir;
+    Path tempFile;
+    private FileOutputStream fop;
 
     public Client(int port, String host, String topic){
         this.port = port;
@@ -33,13 +43,23 @@ public class Client {
         gson = new Gson();
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
+        try {
+            Path basePath = Paths.get(System.getProperty("java.io.tmpdir")+"/Gagugadu");
+            basePath.toFile().mkdir();
+            basePath.toFile().deleteOnExit();
+            tempDir= Files.createTempDirectory(basePath,"gg-files-");
+            tempDir.toFile().deleteOnExit();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         status = UserStatus.AVAILABLE;
 
         options = new MqttClientOptions().setKeepAliveTimeSeconds(30);
 
         client = MqttClient.create(Vertx.vertx(), options);
 
-        client.exceptionHandler(event -> System.out.println("Ss"));
+        client.exceptionHandler(event -> System.out.println("test"));
 
         client.publishHandler(publish -> {
             System.out.println("Just received message on [" + publish.topicName() + "] payload [" + publish.payload().toString(Charset.defaultCharset()) + "] with QoS [" + publish.qosLevel() + "]");
@@ -47,7 +67,15 @@ public class Client {
 
             switch (payload.getContentType()) {
                 case REGISTRATION:
-                    Main.registerController.showSuccesfulDialog(payload.getRegistration().getNewId());
+                    if(payload.getRegistration().getRegistrationStatus()==RegistrationStatus.REGISTRATION_SUCCESSFUL) {
+                        Main.registerController.showSuccesfulDialog(payload.getRegistration().getNewId());
+                        clientId = payload.getRegistration().getNewId();
+                        try {
+                            Main.registerController.sendImage();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     break;
                 case AUTHENTICATION:
                     switch (payload.getAuthentication().getAuthenticationStatus()) {
@@ -61,6 +89,12 @@ public class Client {
                                 }
                             }
                             Main.mainController.loadClientInfo(payload.getAuthentication().getName());
+                            synchronized (this) {
+                                try {
+                                    wait();
+                                } catch (InterruptedException ie) {
+                                }
+                            }
                             break;
                         case ERROR:
                             Main.loginController.showLoginError();
@@ -86,7 +120,42 @@ public class Client {
                     Main.mainController.showMessage(payload);
                     break;
                 case IMAGE:
+                    switch(payload.getImageStatus()) {
+                        case START:
+                            try {
+                                tempFile = Files.createTempFile(tempDir,"userImage-", ".png");
+                                tempFile.toFile().deleteOnExit();
+                                fop = new FileOutputStream(tempFile.toFile());
 
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+
+                        case SENDING:
+                            try {
+                                fop.write(payload.getFileContent());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+
+                        case STOP:
+                            try {
+                                fop.flush();
+                                fop.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } finally {
+                                if(payload.getClientId()==clientId){
+                                    Main.mainController.updateUserAvatar(tempFile.toString());
+                                } else {
+                                    Main.mainController.updateContactAvatarURI(payload, tempFile.toString());
+                                }
+                            }
+
+                            break;
+                    }
                     break;
 
                 default:
@@ -185,9 +254,21 @@ public class Client {
                 false);
     }
 
-    public void sendImage(File file) {
-
+    public void sendImage(byte[] fileContent, ImageStatus imageStatus) {
+        client.publish(
+                topic,
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.IMAGE, clientId, imageStatus, fileContent), Payload.class)),
+                MqttQoS.AT_MOST_ONCE,
+                false,
+                false);
     }
 
-
+    public void sendImage(ImageStatus imageStatus) {
+        client.publish(
+                topic,
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.IMAGE, clientId, imageStatus), Payload.class)),
+                MqttQoS.AT_MOST_ONCE,
+                false,
+                false);
+    }
 }

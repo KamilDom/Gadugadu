@@ -20,6 +20,12 @@ public class UserInfo {
         this.endpoint = endpoint;
     }
 
+    public UserInfo(int clientId, String defaultNick, UserStatus userStatus) {
+        this.clientId = clientId;
+        this.defaultNick = defaultNick;
+        this.userStatus = userStatus;
+    }
+
     public String getClientIdentifier() {
         return clientIdentifier;
     }

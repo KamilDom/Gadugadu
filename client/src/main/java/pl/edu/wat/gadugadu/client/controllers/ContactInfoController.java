@@ -46,6 +46,7 @@ public class ContactInfoController {
     public void onContactClick(MouseEvent mouseEvent) {
         mainController.changeDestinationId(id);
         mainController.showConversationWithClient(id);
+        lastMessage.setText("");
     }
 
     public void setCircleStroke(UserStatus userStatus){

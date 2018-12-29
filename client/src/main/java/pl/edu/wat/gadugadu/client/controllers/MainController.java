@@ -1,10 +1,8 @@
 package pl.edu.wat.gadugadu.client.controllers;
 
-import com.google.gson.Gson;
 import com.jfoenix.controls.JFXTextArea;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -15,17 +13,18 @@ import javafx.scene.paint.ImagePattern;
 import javafx.stage.Stage;
 import pl.edu.wat.gadugadu.client.Contact;
 import pl.edu.wat.gadugadu.client.Main;
-import pl.edu.wat.gadugadu.client.Message;
 import pl.edu.wat.gadugadu.client.controllers.messageViewControllers.MessageViewController;
 import pl.edu.wat.gadugadu.common.UserInfo;
 import pl.edu.wat.gadugadu.common.UserStatus;
 import pl.edu.wat.gadugadu.common.Payload;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class MainController {
@@ -109,6 +108,7 @@ public class MainController {
                         UserStatus newUserStatus = UserStatus.valueOf(Arrays.asList(UserStatus.statusFromInputBox).indexOf(s));
                         Main.client.changeStatus(newUserStatus);
                         userInfoController.setStatusLabel(UserStatus.statusNames[newUserStatus.value()]);
+                        userInfoController.setCircleStroke(newUserStatus);
                     },
                             () -> Main.client.publishMessage(removeLastChar(messageField.getText()), destinationId)
                     );
@@ -127,12 +127,18 @@ public class MainController {
         | payload.getDestinationId()==Main.client.clientId & payload.getClientId()==destinationId)
             Platform.runLater(() -> {
                 VBox vBox = new VBox();
-
+                AtomicReference<Image> img = new AtomicReference<>();
                 FXMLLoader loader;
                 if (payload.getClientId() == Main.client.clientId) {
                     loader = new FXMLLoader(getClass().getResource("/messageView/outgoingMessage.fxml"));
+                    img.set(userInfoController.getUserAvatar());
                 } else {
                     loader = new FXMLLoader(getClass().getResource("/messageView/incomingMessage.fxml"));
+                    contacts.stream()
+                            .filter(contact -> contact.getId()==payload.getClientId())
+                            .findAny()
+                            .ifPresent(contact -> img.set(contact.getContactAvatar()));
+
                 }
 
                 Parent parent;
@@ -151,8 +157,7 @@ public class MainController {
                         messageViewController.messageContent.setMaxWidth(messageScrollBox.getWidth() - 150);
                     });
 
-                    Image img = new Image("/blank-profile-picture.png");
-                    messageViewController.userImage.setFill(new ImagePattern(img));
+                    messageViewController.userImage.setFill(new ImagePattern(img.get()));
 
                     vBox.getChildren().addAll(parent);
                     messageScrollBox.getChildren().add(vBox);
@@ -184,6 +189,9 @@ public class MainController {
                 parent = loader.load();
                 userInfoController = loader.getController();
                 userInfoController.setClient(Main.client);
+                synchronized(Main.client) {
+                    Main.client.notify();
+                }
                 clientName=name;
                 userInfoController.userName.setText(name + " (" + Main.client.clientId + ")");
                 userInfoController.status.setText(UserStatus.statusNames[Main.client.getStatus().value()]);
@@ -198,6 +206,17 @@ public class MainController {
                 e.printStackTrace();
             }
         });
+    }
+
+    public void updateUserAvatar(String imageURI) {
+        File imageFile = new File(imageURI);
+        System.out.println(imageFile.getAbsolutePath());
+        if (imageFile.exists()) {
+            Image img = new Image(imageFile.toURI().toString());
+            userInfoController.setUserAvatar(img);
+            userInfoController.userImage.setFill(new ImagePattern(img));
+        }
+
     }
 
     public void showContactsList(List<UserInfo> onlineUsers) {
@@ -225,6 +244,15 @@ public class MainController {
                     } else {
                         Platform.runLater(() -> contact.setStatus(payload.getStatus()));
                     }
+                });
+    }
+
+    public void updateContactAvatarURI(Payload payload, String imageURI){
+        contacts.stream()
+                .filter(contact -> contact.getId()==payload.getClientId())
+                .findAny()
+                .ifPresent(contact -> {
+                        contact.updateContactAvatar(imageURI);
                 });
     }
 
@@ -280,4 +308,6 @@ public class MainController {
     public void playMessageSound(){
         messageSound.play();
     }
+
+
 }

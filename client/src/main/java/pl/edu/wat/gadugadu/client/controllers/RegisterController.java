@@ -14,11 +14,14 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import pl.edu.wat.gadugadu.client.Main;
+import pl.edu.wat.gadugadu.common.ImageStatus;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class RegisterController {
 
@@ -28,7 +31,8 @@ public class RegisterController {
     public JFXPasswordField password;
     public StackPane registrationPane;
     public VBox registrationVBox;
-
+    private byte[] fileContent;
+    private FileInputStream fis;
 
     public void initialize() {
         Main.registerController=this;
@@ -69,15 +73,14 @@ public class RegisterController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Upload image");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("JPG", "*.jpg"),
+                new FileChooser.ExtensionFilter("JPG, PNG", "*.jpg","*.png"),
                 new FileChooser.ExtensionFilter("PNG", "*.png"),
-                new FileChooser.ExtensionFilter("All Images", "*.*")
+                new FileChooser.ExtensionFilter("All files", "*.*")
         );
         File file = fileChooser.showOpenDialog((name.getScene().getWindow()));
-        BufferedImage bimg = null;
-        // TODO dorobic logike wczytywania i sprawdzania rozmiarow
+        // TODO dorobic sprawdzanie rozmiaru pliku
         try {
-            bimg = ImageIO.read(file);
+            fis=new FileInputStream(file.getPath());
             imagePath.setText(file.getPath());
         } catch (IOException e) {
             e.printStackTrace();
@@ -131,5 +134,18 @@ public class RegisterController {
 
             registrationVBox.setEffect(boxBlur);
         });
+    }
+
+    public void sendImage() throws IOException {
+        if(fis!=null){
+            Main.client.sendImage(ImageStatus.START);
+            byte[] buffer = new byte[2048];
+            while (fis.read(buffer) > 0)
+            {
+                Main.client.sendImage(buffer, ImageStatus.SENDING);
+            }
+            fis.close();
+            Main.client.sendImage(ImageStatus.STOP);
+        }
     }
 }

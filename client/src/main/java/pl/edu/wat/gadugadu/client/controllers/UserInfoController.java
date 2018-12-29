@@ -3,9 +3,9 @@ package pl.edu.wat.gadugadu.client.controllers;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import pl.edu.wat.gadugadu.client.Client;
 import pl.edu.wat.gadugadu.common.UserStatus;
@@ -15,8 +15,10 @@ public class UserInfoController {
     public Label userName;
     public Label status;
     public HBox userInfoBox;
+    public VBox userInfoVBox;
     private ContextMenu contextMenu;
     private Client client;
+    private Image userAvatar;
 
     public void initialize() {
         contextMenu = new ContextMenu();
@@ -25,12 +27,12 @@ public class UserInfoController {
         MenuItem status3 = new MenuItem("Do not disturb");
         MenuItem status4 = new MenuItem("Away");
         MenuItem status5 = new MenuItem("Be right back");
-
+        userAvatar = new Image("/blank-profile-picture.png");
 
         contextMenu.getItems().addAll(status1, status2, status3, status4, status5);
 
-        userInfoBox.setOnContextMenuRequested(event -> {
-            contextMenu.show(userInfoBox, event.getScreenX(), event.getScreenY());
+        userInfoVBox.setOnContextMenuRequested(event -> {
+            contextMenu.show(userInfoVBox, event.getScreenX(), event.getScreenY());
         });
 
         status1.setOnAction(event -> {
@@ -72,5 +74,13 @@ public class UserInfoController {
     public void setCircleStroke(UserStatus userStatus) {
         userImage.setStrokeWidth(3.5);
         userImage.setStroke(UserStatus.statusColors[userStatus.value()]);
+    }
+
+    public Image getUserAvatar() {
+        return userAvatar;
+    }
+
+    public void setUserAvatar(Image userAvatar) {
+        this.userAvatar = userAvatar;
     }
 }

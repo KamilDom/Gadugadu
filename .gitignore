@@ -1,5 +1,5 @@
 # Created by https://www.gitignore.io/api/java,macos,linux,gradle,windows,intellij
-
+server/src/main/resources/userImages/
 ### Intellij ###
 .idea/
 

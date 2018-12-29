@@ -19,6 +19,7 @@ import pl.edu.wat.gadugadu.client.controllers.MainController;
 import pl.edu.wat.gadugadu.common.UserInfo;
 import pl.edu.wat.gadugadu.common.UserStatus;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
@@ -28,10 +29,11 @@ public class Contact {
     private FXMLLoader loader;
     private Parent parent;
     private ContactInfoController contactInfoController;
-    private Image img;
+    private Image contactAvatar;
     private Date lastMessageDate;
     private UserInfo userInfo;
     private String name;
+    private String imageURI;
     private boolean mouseEntered;
 
     final public Animation animation = new Transition() {
@@ -68,9 +70,8 @@ public class Contact {
             contactInfoController.setId(userInfo.getClientId());
             contactInfoController.setCircleStroke(userInfo.getUserStatus());
             contactInfoController.setMainController(mainController);
-
-            img = new Image("/blank-profile-picture.png");
-            contactInfoController.userImage.setFill(new ImagePattern(img));
+            contactAvatar = new Image("/blank-profile-picture.png");
+            contactInfoController.userImage.setFill(new ImagePattern(contactAvatar));
 
             vBox.getChildren().addAll(parent);
         } catch (IOException e) {
@@ -106,4 +107,20 @@ public class Contact {
     public void setMouseEntered(boolean mouseEntered) {
         this.mouseEntered = mouseEntered;
     }
+
+    public Image getContactAvatar() {
+        return contactAvatar;
+    }
+
+    public void updateContactAvatar(String imageURI) {
+        this.imageURI = imageURI;
+        File imageFile = new File(imageURI);
+        System.out.println(imageFile.getAbsolutePath());
+        if (imageFile.exists()) {
+            contactAvatar = new Image(imageFile.toURI().toString());
+            contactInfoController.userImage.setFill(new ImagePattern(contactAvatar));
+        }
+    }
+
+
 }
