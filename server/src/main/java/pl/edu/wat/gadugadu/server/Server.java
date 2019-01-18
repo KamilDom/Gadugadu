@@ -45,6 +45,9 @@ public class Server {
         gson = new Gson();
         onlineUsers = new ArrayList<>();
         connectedClients=0;
+
+        new File("src/main/resources/userImages/").mkdir();
+
         mqttServer = MqttServer.create(Vertx.vertx());
 
         mqttServer
