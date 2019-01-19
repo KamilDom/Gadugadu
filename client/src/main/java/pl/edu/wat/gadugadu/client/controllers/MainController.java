@@ -57,6 +57,7 @@ public class MainController {
     public void initialize() {
         Main.mainController = this;
         messages  = new LinkedHashMap<>();
+        //TODO seminarium
        synchronized(Main.client) {
            Main.client.notify();
        }

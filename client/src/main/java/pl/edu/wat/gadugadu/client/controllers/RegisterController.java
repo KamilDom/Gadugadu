@@ -13,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.apache.commons.codec.digest.DigestUtils;
 import pl.edu.wat.gadugadu.client.Main;
 import pl.edu.wat.gadugadu.common.ImageStatus;
 
@@ -107,7 +108,7 @@ public class RegisterController {
 
         if (name.getText().length()>3 & password.getText().length()>3) {
                 Main.client.connect();
-                Main.client.register(name.getText(), password.getText());
+                Main.client.register(name.getText(), DigestUtils.sha512Hex(password.getText()));
         }
     }
 

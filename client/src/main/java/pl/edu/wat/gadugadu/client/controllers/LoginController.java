@@ -14,6 +14,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.apache.commons.codec.digest.DigestUtils;
 import pl.edu.wat.gadugadu.client.Main;
 
 import java.awt.event.MouseEvent;
@@ -28,9 +29,6 @@ public class LoginController {
 
     public void initialize() {
         Main.loginController=this;
-        id.setText("100");
-        password.setText("1234");
-
     }
 
 
@@ -54,17 +52,13 @@ public class LoginController {
     }
 
     public void onLogin(ActionEvent actionEvent) {
-        String uname = id.getText();
-        String pword = password.getText();
 
         if(!Main.client.isConnected())
             Main.client.connect();
 
-        //TODO do kodowania w sha w bazie danych
-        //String pword = DigestUtils.shaHex(password.getText());
         if(Main.client.isConnected()) {
-            Main.client.login(Integer.valueOf(uname), pword);
-            Main.client.clientId = Integer.valueOf(uname);
+            Main.client.login(Integer.valueOf(id.getText()), DigestUtils.sha512Hex(password.getText()));
+            Main.client.clientId = Integer.valueOf(id.getText());
         }
 
     }

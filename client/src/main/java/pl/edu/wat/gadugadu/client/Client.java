@@ -82,6 +82,7 @@ public class Client {
                         case SUCCESSFUL:
                             Main.loginController.loadMainStage();
                             Main.loginController.closeLoginStage();
+                            //TODO seminarium
                             synchronized (this) {
                                 try {
                                     wait();
