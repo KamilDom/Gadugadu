@@ -4,14 +4,31 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 public class MainController {
 
     public Label serviceStatus;
     public Label connectedClients;
     public Server server;
 
+
     public void initialize() {
-        server = new Server(1883,"127.0.0.20","gadugadu", this);
+        Properties properties = new Properties();
+        try {
+            InputStream in = getClass().getResourceAsStream("/server.properties");
+            properties.load(in);
+            server = new Server(Integer.parseInt(properties.getProperty("Port")), properties.getProperty("IP"),"gadugadu", this);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void onStartServer(ActionEvent actionEvent) {

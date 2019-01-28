@@ -26,6 +26,8 @@ public class LoginController {
     public JFXPasswordField password;
     public StackPane loginPane;
     public VBox loginVBox;
+    public Label passwordError;
+    public Label idError;
 
     public void initialize() {
         Main.loginController=this;
@@ -52,14 +54,44 @@ public class LoginController {
     }
 
     public void onLogin(ActionEvent actionEvent) {
+        if(!id.getText().matches("\\d+") || !(password.getText() != null && !password.getText().isEmpty())){
+            if(!id.getText().matches("\\d+") ){
+                idError.setText("Wrong id format");
+                idError.setVisible(true);
+                id.getStyleClass().add("wrong-credentials");
+            } else {
+                idError.setVisible(false);
+                id.getStyleClass().clear();
+                id.getStyleClass().addAll("text-input", "text-field",  "jfx-text-field");
+            }
 
-        if(!Main.client.isConnected())
-            Main.client.connect();
+            if(!(password.getText() != null && !password.getText().isEmpty())){
+                passwordError.setText("Password can not be empty");
+                passwordError.setVisible(true);
+                password.getStyleClass().add("wrong-credentials");
+            } else {
+                passwordError.setVisible(false);
+                password.getStyleClass().clear();
+                password.getStyleClass().addAll("text-input", "text-field", "password-field",  "jfx-password-field");
+            }
 
-        if(Main.client.isConnected()) {
-            Main.client.login(Integer.valueOf(id.getText()), DigestUtils.sha512Hex(password.getText()));
-            Main.client.clientId = Integer.valueOf(id.getText());
+        } else {
+            idError.setVisible(false);
+            id.getStyleClass().clear();
+            id.getStyleClass().addAll("text-input", "text-field",  "jfx-text-field");
+            passwordError.setVisible(false);
+            password.getStyleClass().clear();
+            password.getStyleClass().addAll("text-input", "text-field", "password-field",  "jfx-password-field");
+
+            if(!Main.client.isConnected()) {
+                Main.client.connect();
+            }
+            else {
+                Main.client.login(Integer.valueOf(id.getText()), DigestUtils.sha512Hex(password.getText()));
+                Main.client.clientId = Integer.valueOf(id.getText());
+            }
         }
+
 
     }
 
@@ -83,8 +115,14 @@ public class LoginController {
 
 
     public void showLoginError() {
-        id.getStyleClass().add("wrong-credentials");
-        password.getStyleClass().add("wrong-credentials");
+        Platform.runLater(() -> {
+            idError.setText("Wrong id or password");
+            passwordError.setText("Wrong id or password");
+            idError.setVisible(true);
+            passwordError.setVisible(true);
+            id.getStyleClass().add("wrong-credentials");
+            password.getStyleClass().add("wrong-credentials");
+        });
     }
 
     public void showErrorDialog(){
@@ -108,5 +146,6 @@ public class LoginController {
             loginVBox.setEffect(boxBlur);
         });
     }
+
 
 }

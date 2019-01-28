@@ -7,6 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import pl.edu.wat.gadugadu.client.Client;
 import pl.edu.wat.gadugadu.common.UserStatus;
 
@@ -16,6 +17,7 @@ public class UserInfoController {
     public Label status;
     public HBox userInfoBox;
     public VBox userInfoVBox;
+    public Line line;
     private ContextMenu contextMenu;
     private Client client;
     private Image userAvatar;
@@ -75,6 +77,7 @@ public class UserInfoController {
         userImage.setStrokeWidth(3.5);
         userImage.setStroke(UserStatus.statusColors[userStatus.value()]);
     }
+
 
     public Image getUserAvatar() {
         return userAvatar;

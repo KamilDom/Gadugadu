@@ -48,6 +48,11 @@
     -fx-font-size: 9pt;
 }
 
+.label-error{
+    -fx-text-fill: -fx-red;
+    -fx-font-size: 9pt;
+}
+
 .button:hover, .button:focused{
     -fx-border-color: -fx-secondary;
     -fx-background-color: -fx-secondary;

@@ -50,17 +50,14 @@ public class MainController {
     private Map<Integer, List<Payload>> messages;
     private List<Contact> contacts = new ArrayList<>();
 
-    UserInfoController userInfoController;
+    private UserInfoController userInfoController;
 
     private AudioClip messageSound;
 
     public void initialize() {
         Main.mainController = this;
         messages  = new LinkedHashMap<>();
-        //TODO seminarium
-       synchronized(Main.client) {
-           Main.client.notify();
-       }
+        loadClientInfo(Main.client.getClientName());
         dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
         dateFormatTime = new SimpleDateFormat("HH:mm");
 
@@ -100,20 +97,21 @@ public class MainController {
     public void onEnter(KeyEvent keyEvent) {
         //TODO dorobic mozwliwosc wprowadzania znaku nowej linii przez kombinacje SHIFT + ENTER
 
-        if (keyEvent.getCode().toString().equals("ENTER") & !messageField.getText().isBlank()) {
-            //sprawdzanie czy wprowadzono komende zmiany statusu
-            Arrays.stream(UserStatus.statusFromInputBox)
-                    .filter(removeLastChar(messageField.getText())::equals)
-                    .findAny()
-                    .ifPresentOrElse(s -> {
-                        UserStatus newUserStatus = UserStatus.valueOf(Arrays.asList(UserStatus.statusFromInputBox).indexOf(s));
-                        Main.client.changeStatus(newUserStatus);
-                        userInfoController.setStatusLabel(UserStatus.statusNames[newUserStatus.value()]);
-                        userInfoController.setCircleStroke(newUserStatus);
-                    },
-                            () -> Main.client.publishMessage(removeLastChar(messageField.getText()), destinationId)
-                    );
-
+        if (keyEvent.getCode().toString().equals("ENTER")) {
+            if(!messageField.getText().isBlank()) {
+                //sprawdzanie czy wprowadzono komende zmiany statusu
+                Arrays.stream(UserStatus.statusFromInputBox)
+                        .filter(removeLastChar(messageField.getText())::equals)
+                        .findAny()
+                        .ifPresentOrElse(s -> {
+                                    UserStatus newUserStatus = UserStatus.valueOf(Arrays.asList(UserStatus.statusFromInputBox).indexOf(s));
+                                    Main.client.changeStatus(newUserStatus);
+                                    userInfoController.setStatusLabel(UserStatus.statusNames[newUserStatus.value()]);
+                                    userInfoController.setCircleStroke(newUserStatus);
+                                },
+                                () -> Main.client.publishMessage(removeLastChar(messageField.getText()), destinationId)
+                        );
+            }
             messageField.clear();
         }
 
@@ -175,7 +173,10 @@ public class MainController {
                     .findAny()
                     .ifPresent(contact ->
                             Platform.runLater(() ->{
-                                    contact.getContactInfoController().lastMessage.setText(payload.getContent());
+                                    String shortMessage = payload.getContent().substring(0, Math.min(payload.getContent().length(), 15));
+                                    if(shortMessage.length()==10)
+                                        shortMessage=shortMessage+"...";
+                                    contact.getContactInfoController().lastMessage.setText(shortMessage);
                                     contact.animation.play();
                             }));
         }
@@ -190,9 +191,6 @@ public class MainController {
                 parent = loader.load();
                 userInfoController = loader.getController();
                 userInfoController.setClient(Main.client);
-                synchronized(Main.client) {
-                    Main.client.notify();
-                }
                 clientName=name;
                 userInfoController.userName.setText(name + " (" + Main.client.clientId + ")");
                 userInfoController.status.setText(UserStatus.statusNames[Main.client.getStatus().value()]);
@@ -202,6 +200,7 @@ public class MainController {
 
                 vBox.getChildren().addAll(parent);
                 userInfoBox.getChildren().add(vBox);
+                Main.client.sendClientReady();
 
             } catch (IOException e) {
                 e.printStackTrace();

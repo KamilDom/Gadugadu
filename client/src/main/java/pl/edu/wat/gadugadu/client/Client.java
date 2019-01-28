@@ -6,17 +6,15 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
+import org.apache.commons.codec.digest.DigestUtils;
 import pl.edu.wat.gadugadu.common.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -25,15 +23,15 @@ public class Client {
     private int port;
     private String host;
     private String topic;
+    private String clientName;
     private MqttClientOptions options;
     private MqttClient client;
     private Gson gson;
     private DateFormat dateFormat;
     private UserStatus status;
-    private int connectionTimeout = 500; //5s
     public int clientId;
-    Path tempDir;
-    Path tempFile;
+    private Path tempDir;
+    private Path tempFile;
     private FileOutputStream fop;
 
     public Client(int port, String host, String topic){
@@ -62,7 +60,7 @@ public class Client {
         client.exceptionHandler(event -> System.out.println("test"));
 
         client.publishHandler(publish -> {
-            System.out.println("Just received message on [" + publish.topicName() + "] payload [" + publish.payload().toString(Charset.defaultCharset()) + "] with QoS [" + publish.qosLevel() + "]");
+            System.out.println("Message  [" + publish.topicName() + "] payload [" + publish.payload().toString(Charset.defaultCharset()) + "] with QoS [" + publish.qosLevel() + "]");
             Payload payload = gson.fromJson(publish.payload().toString(), Payload.class);
 
             switch (payload.getContentType()) {
@@ -82,20 +80,7 @@ public class Client {
                         case SUCCESSFUL:
                             Main.loginController.loadMainStage();
                             Main.loginController.closeLoginStage();
-                            //TODO seminarium
-                            synchronized (this) {
-                                try {
-                                    wait();
-                                } catch (InterruptedException ie) {
-                                }
-                            }
-                            Main.mainController.loadClientInfo(payload.getAuthentication().getName());
-                            synchronized (this) {
-                                try {
-                                    wait();
-                                } catch (InterruptedException ie) {
-                                }
-                            }
+                            clientName=payload.getAuthentication().getName();
                             break;
                         case ERROR:
                             Main.loginController.showLoginError();
@@ -175,33 +160,14 @@ public class Client {
 
 
     public void connect(){
-        //TODO dodanie obługi wyjątku w przypadku niepowodzenia połączenia
-        connectionTimeout = 500;
         client.connect(port, host, ch -> {
             if(ch.failed()){
                 Main.loginController.showErrorDialog();
-                connectionTimeout=0;
+            } else {
+                login(Integer.valueOf(Main.loginController.id.getText()), DigestUtils.sha512Hex(Main.loginController.password.getText()));
+                clientId = Integer.valueOf(Main.loginController.id.getText());
             }
            });
-
-        while (connectionTimeout > 0) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            connectionTimeout--;
-            if (Main.client.isConnected()) {
-                System.out.println("Connected to a server");
-                break;
-            }
-        }
-
-        if (connectionTimeout == 0) {
-            System.err.println("Failed to connect to a server");
-        }
-
-
     }
 
     public void disconnect() {
@@ -214,6 +180,10 @@ public class Client {
 
     public UserStatus getStatus() {
         return status;
+    }
+
+    public String getClientName() {
+        return clientName;
     }
 
     public void login(Integer id, String password) {
@@ -268,6 +238,15 @@ public class Client {
         client.publish(
                 topic,
                 Buffer.buffer(gson.toJson(new Payload(PayloadType.IMAGE, clientId, imageStatus), Payload.class)),
+                MqttQoS.AT_MOST_ONCE,
+                false,
+                false);
+    }
+
+    public void sendClientReady() {
+        client.publish(
+                topic,
+                Buffer.buffer(gson.toJson(new Payload(PayloadType.NEW_CLIENT_CONNECTED), Payload.class)),
                 MqttQoS.AT_MOST_ONCE,
                 false,
                 false);

@@ -32,6 +32,8 @@ public class RegisterController {
     public JFXPasswordField password;
     public StackPane registrationPane;
     public VBox registrationVBox;
+    public Label passwordError;
+    public Label nameError;
     private byte[] fileContent;
     private FileInputStream fis;
 
@@ -95,15 +97,23 @@ public class RegisterController {
     public void onSave(ActionEvent actionEvent) {
 
         if(name.getText().length()<3){
+            nameError.setText("Name too short");
+            nameError.setVisible(true);
             name.getStyleClass().add("wrong-credentials");
         } else {
-            name.getStyleClass().remove("wrong-credentials");
+            nameError.setVisible(false);
+            name.getStyleClass().clear();
+            name.getStyleClass().addAll("text-input", "text-field",  "jfx-text-field");
         }
 
         if(password.getText().length()<3){
+            passwordError.setText("Password too short");
+            passwordError.setVisible(true);
             password.getStyleClass().add("wrong-credentials");
         } else {
-            password.getStyleClass().remove("wrong-credentials");
+            passwordError.setVisible(false);
+            password.getStyleClass().clear();
+            password.getStyleClass().addAll("text-input", "text-field", "password-field",  "jfx-password-field");
         }
 
         if (name.getText().length()>3 & password.getText().length()>3) {

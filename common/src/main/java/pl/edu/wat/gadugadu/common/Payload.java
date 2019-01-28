@@ -79,6 +79,11 @@ public class Payload {
         this.imageStatus = imageStatus;
     }
 
+    //ready status
+    public Payload(PayloadType contentType) {
+        this.contentType = contentType;
+    }
+
 
     public PayloadType getContentType() {
         return contentType;

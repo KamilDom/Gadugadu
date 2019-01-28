@@ -172,9 +172,9 @@ public class Server {
                                         publishLoginStatus(endpoint,user.getName());
                                         UserInfo u = new UserInfo(endpoint.clientIdentifier(), payload.getAuthentication().getId(), user.getName(), user.getAvatarURI(), payload.getStatus(), endpoint);
                                         publishNewConnectedClientInfo(u);
-                                        publishClientsList(endpoint);
+                                       // publishClientsList(endpoint);
                                         onlineUsers.add(u);
-                                        publishImagesToNewConnectedClient(endpoint);
+                                       // publishImagesToNewConnectedClient(endpoint);
 
                                     } else {
                                         publishLoginStatus(endpoint,null);
@@ -187,7 +187,12 @@ public class Server {
 
                                 break;
                             case NEW_CLIENT_CONNECTED:
-
+                                publishClientsList(endpoint);
+                                try {
+                                    publishImagesToNewConnectedClient(endpoint);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                                 break;
                             case STATUS_UPDATE:
                                 onlineUsers.stream()
@@ -320,7 +325,6 @@ public class Server {
     }
 
     public void publishNewConnectedClientInfo(UserInfo newConnectedClientInfo) throws IOException {
-
 
         for(UserInfo userInfo: onlineUsers) {
             userInfo.getEndpoint().publish(
