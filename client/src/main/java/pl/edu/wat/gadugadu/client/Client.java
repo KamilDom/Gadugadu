@@ -19,6 +19,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * Main client class
+ */
 public class Client {
     private int port;
     private String host;

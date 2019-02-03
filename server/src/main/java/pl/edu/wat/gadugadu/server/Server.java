@@ -37,6 +37,12 @@ public class Server {
     private FileOutputStream fop;
     private FileInputStream fis;
 
+    /**
+     * Main server class
+     * @param port Server port
+     * @param host Server ip
+     * @param topic Mqtt topic
+     */
     public Server(int port, String host, String topic, MainController controller) {
         this.port = port;
         this.host = host;

@@ -3,6 +3,9 @@ package pl.edu.wat.gadugadu.common;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+/**
+ * Payload class
+ */
 public class Payload {
     private PayloadType contentType;
     private Integer clientId;
@@ -17,14 +20,18 @@ public class Payload {
     private byte[] fileContent;
     private ImageStatus imageStatus;
 
-    //status
+    /**
+     * status
+     */
     public Payload(PayloadType contentType, Integer clientId, UserStatus status) {
         this.contentType = contentType;
         this.clientId = clientId;
         this.status = status;
     }
 
-    //message
+    /**
+     * message
+     */
     public Payload(PayloadType contentType, Integer clientId, Integer destinationId, String date, String content) {
         this.contentType = contentType;
         this.clientId = clientId;
@@ -33,38 +40,50 @@ public class Payload {
         this.content = content;
     }
 
-    //login
+    /**
+     * login
+     */
     public Payload(PayloadType contentType, UserStatus status, Authentication authentication) {
         this.contentType = contentType;
         this.status = status;
         this.authentication = authentication;
     }
 
-    //login response
+    /**
+     * login response
+     */
     public Payload(PayloadType contentType, Authentication authentication) {
         this.contentType = contentType;
         this.authentication = authentication;
     }
 
-    //online users list
+    /**
+     * online users list
+     */
     public Payload(PayloadType contentType, List<UserInfo> onlineUsers) {
         this.contentType = contentType;
         this.usersInfo = onlineUsers;
     }
 
-    // new connected client
+    /**
+     * new connected client
+     */
     public Payload(PayloadType contentType, UserInfo userInfo) {
         this.contentType = contentType;
         this.userInfo = userInfo;
     }
 
-    //registration
+    /**
+     * registration
+     */
     public Payload(PayloadType contentType, Registration registration){
         this.contentType = contentType;
         this.registration = registration;
     }
 
-    //image
+    /**
+     * image
+     */
     public Payload(PayloadType contentType, Integer clientId, ImageStatus imageStatus, byte[] fileContent){
         this.contentType = contentType;
         this.clientId = clientId;
@@ -72,14 +91,18 @@ public class Payload {
         this.imageStatus = imageStatus;
     }
 
-    //image
+    /**
+     * image
+     */
     public Payload(PayloadType contentType, int clientId, ImageStatus imageStatus) {
         this.contentType = contentType;
         this.clientId = clientId;
         this.imageStatus = imageStatus;
     }
 
-    //ready status
+    /**
+     * ready status
+     */
     public Payload(PayloadType contentType) {
         this.contentType = contentType;
     }
